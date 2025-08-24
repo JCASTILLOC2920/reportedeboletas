@@ -768,16 +768,86 @@
 
     <script>
         // =============================================
-        // INICIALIZACIÓN DE INDEXEDDB CON DEXIE.JS
+        // INICIALIZACIÓN MEJORADA DE INDEXEDDB CON DEXIE.JS
         // =============================================
-        const db = new Dexie('BoletasDB');
-        db.version(1).stores({
-            users: '&username, password, lastLogin, status, permissions'
-        });
+        let db;
+        
+        // Función mejorada para inicializar la base de datos
+        async function initializeDatabase() {
+            try {
+                db = new Dexie('BoletasDB');
+                
+                // Definición de esquema con versionado
+                db.version(2).stores({
+                    users: '&username, password, lastLogin, status, permissions, createdAt'
+                });
+                
+                // Abrir la base de datos
+                await db.open();
+                console.log("Base de datos abierta correctamente");
+                
+                // Solicitar persistencia de almacenamiento
+                await requestPersistence();
+                
+                return true;
+            } catch (error) {
+                console.error("Error inicializando la base de datos:", error);
+                
+                // Intentar recuperación en caso de error
+                try {
+                    // Verificar si la base de datos existe y puede ser abierta
+                    const dbNames = await Dexie.getDatabaseNames();
+                    if (dbNames.includes('BoletasDB')) {
+                        db = new Dexie('BoletasDB');
+                        await db.open();
+                        console.log("Base de datos recuperada después de error");
+                        return true;
+                    }
+                } catch (recoveryError) {
+                    console.error("Error en recuperación:", recoveryError);
+                }
+                
+                return false;
+            }
+        }
 
-        // Precarga de datos críticos - ahora vacía
+        // Solicitar persistencia de almacenamiento al navegador
+        async function requestPersistence() {
+            if (navigator.storage && navigator.storage.persist) {
+                try {
+                    const persisted = await navigator.storage.persist();
+                    if (persisted) {
+                        console.log("Persistencia de almacenamiento concedida");
+                    } else {
+                        console.log("Persistencia de almacenamiento no concedida");
+                    }
+                } catch (error) {
+                    console.error("Error solicitando persistencia:", error);
+                }
+            }
+            
+            // Verificar el estado de persistencia actual
+            if (navigator.storage && navigator.storage.persisted) {
+                try {
+                    const isPersisted = await navigator.storage.persisted();
+                    console.log("El almacenamiento ya es persistente:", isPersisted);
+                } catch (error) {
+                    console.error("Error verificando persistencia:", error);
+                }
+            }
+        }
+
+        // Precarga de datos críticos - ahora con respaldo en localStorage
         async function preloadCriticalData() {
             try {
+                // Verificar primero si la base de datos está inicializada
+                if (!db || !db.isOpen()) {
+                    const initialized = await initializeDatabase();
+                    if (!initialized) {
+                        throw new Error("No se pudo inicializar la base de datos");
+                    }
+                }
+                
                 // Solo crear el usuario admin si no existe
                 const adminExists = await db.users.get("josehpcastillo");
                 if (!adminExists) {
@@ -787,32 +857,53 @@
                         password: hashedPassword,
                         lastLogin: new Date().toLocaleString(),
                         status: "active",
-                        permissions: "admin"
+                        permissions: "admin",
+                        createdAt: new Date().getTime()
                     });
                     console.log("Usuario admin creado");
+                    
+                    // Crear respaldo en localStorage de la existencia del admin
+                    localStorage.setItem('adminUserExists', 'true');
                 } else {
                     console.log("Usuario admin ya existe");
+                    
+                    // Actualizar respaldo en localStorage
+                    localStorage.setItem('adminUserExists', 'true');
                 }
+                
+                return true;
             } catch (error) {
                 console.error("Error en precarga de datos:", error);
+                
+                // Intentar recuperar desde localStorage si es posible
+                if (localStorage.getItem('adminUserExists') === 'true') {
+                    console.log("Datos críticos existen según localStorage");
+                    return true;
+                }
+                
+                return false;
             }
         }
 
         // Escuchador de cambios en tiempo real
-        db.users.hook('creating', function (primKey, obj, transaction) {
-            console.log(`Nuevo usuario creado: ${obj.username}`);
-            return true;
-        });
+        function setupDatabaseHooks() {
+            if (!db) return;
+            
+            db.users.hook('creating', function (primKey, obj, transaction) {
+                console.log(`Nuevo usuario creado: ${obj.username}`);
+                return true;
+            });
 
-        db.users.hook('updating', function (modifications, primKey, obj, transaction) {
-            console.log(`Usuario actualizado: ${obj.username}`);
-            return true;
-        });
+            db.users.hook('updating', function (modifications, primKey, obj, transaction) {
+                console.log(`Usuario actualizado: ${obj.username}`);
+                return true;
+            });
 
-        db.users.hook('deleting', function (primKey, obj, transaction) {
-            console.log(`Usuario eliminado: ${obj.username}`);
-            return true;
-        });
+            db.users.hook('deleting', function (primKey, obj, transaction) {
+                console.log(`Usuario eliminado: ${obj.username}`);
+                return true;
+            });
+        }
 
         // Variables para paginación
         const USERS_PER_PAGE = 10;
@@ -1092,7 +1183,8 @@
                     password: hashedPassword,
                     lastLogin: new Date().toLocaleString(),
                     status: "active",
-                    permissions: "lectura"
+                    permissions: "lectura",
+                    createdAt: new Date().getTime()
                 };
                 
                 // Guardar en IndexedDB
@@ -1142,8 +1234,29 @@
 
         // Inicializar la base de datos al cargar la página
         window.addEventListener('load', async function() {
+            // Inicializar la base de datos
+            await initializeDatabase();
+            
+            // Configurar hooks de la base de datos
+            setupDatabaseHooks();
+            
+            // Precargar datos críticos
             await preloadCriticalData();
-            console.log("Base de datos inicializada correctamente");
+            
+            console.log("Sistema inicializado correctamente");
+            
+            // Verificar regularmente el estado de la base de datos
+            setInterval(async () => {
+                try {
+                    if (!db || !db.isOpen()) {
+                        console.warn("Base de datos cerrada, reconectando...");
+                        await initializeDatabase();
+                        setupDatabaseHooks();
+                    }
+                } catch (error) {
+                    console.error("Error en verificación de estado de BD:", error);
+                }
+            }, 30000); // Verificar cada 30 segundos
         });
     </script>
 </body>
