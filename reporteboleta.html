@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JC PATH LAB - Reporte de Boleta</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            font-size: 11px;
+        }
+
+        .a4-container {
+            width: 210mm;
+            height: 297mm;
+            background: white;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+            padding: 15mm;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .template-header {
+            background: linear-gradient(135deg, #1a3a5f, #2c5d8c);
+            color: white;
+            padding: 10mm;
+            text-align: center;
+            margin: -15mm -15mm 5mm -15mm;
+        }
+
+        .template-header h2 {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .template-header p {
+            font-size: 16px;
+        }
+
+        .boleta-title {
+            font-size: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-decoration: underline;
+            margin: 10mm 0 5mm 0;
+            color: #3a86b8;
+            text-align: center;
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+
+        .template-row {
+            display: flex;
+            margin-bottom: 5px;
+            padding: 3px 0;
+        }
+
+        .template-label {
+            flex: 0 0 40%;
+            font-weight: 600;
+            color: #0d1b2a;
+        }
+
+        .template-value {
+            flex: 1;
+        }
+
+        .divider {
+            border-bottom: 2px solid #e0e0e0;
+            margin: 8mm 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 5mm 0;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            font-size: 11px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .total-row {
+            font-weight: bold;
+            background-color: #f8f9fa;
+        }
+
+        .footer {
+            margin-top: 10mm;
+            color: #666;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            width: 210mm;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3a86b8, #2c5d8c);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #2c5d8c, #1a3a5f);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-volver {
+            background: linear-gradient(135deg, #6c757d, #495057);
+        }
+
+        .btn-volver:hover {
+            background: linear-gradient(135deg, #495057, #343a40);
+        }
+
+        @media print {
+            @page {
+                size: A4;
+                margin: 0;
+            }
+
+            html, body {
+                width: 210mm;
+                height: 297mm;
+                margin: 0;
+                padding: 0;
+                background: white;
+            }
+
+            body > *:not(.a4-container) {
+                display: none !important;
+            }
+
+            .a4-container {
+                box-shadow: none;
+                padding: 15mm;
+                margin: 0;
+                width: 210mm;
+                height: 297mm;
+                page-break-before: avoid;
+                page-break-after: avoid;
+                page-break-inside: avoid;
+            }
+
+            .template-header {
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+                margin: -15mm -15mm 5mm -15mm;
+            }
+        }
+
+        @media screen and (max-width: 600px) {
+            body {
+                padding: 10px;
+                font-size: 10px;
+            }
+
+            .a4-container {
+                width: 100%;
+                max-width: 100%;
+                padding: 10mm;
+                height: auto;
+                margin-bottom: 20px;
+            }
+
+            .template-header {
+                padding: 8mm 5mm;
+                margin: -10mm -10mm 3mm -10mm;
+            }
+
+            .template-header h2 {
+                font-size: 22px;
+            }
+
+            .template-header p {
+                font-size: 14px;
+            }
+
+            .boleta-title {
+                font-size: 18px;
+                margin: 5mm 0 3mm 0;
+            }
+
+            .template-row {
+                flex-direction: column;
+                margin-bottom: 8px;
+            }
+
+            .template-label {
+                flex: none;
+                margin-bottom: 2px;
+            }
+
+            .template-value {
+                flex: none;
+            }
+
+            .button-container {
+                width: 100%;
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+                padding: 15px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="a4-container" id="boleta-content">
+        <div class="template-header">
+            <h2>JC PATH LAB</h2>
+            <p>Laboratorio de Anatomía Patológica</p>
+        </div>
+        
+        <div class="boleta-title">BOLETA DE VENTA</div>
+        
+        <div class="section-title">EMISOR:</div>
+        <div class="template-row">
+            <div class="template-label">NOMBRE:</div>
+            <div class="template-value">Josehp Cristopher Castillo Cuenca</div>
+        </div>
+        <div class="template-row">
+            <div class="template-label">DOCUMENTO:</div>
+            <div class="template-value">DNI 41457466</div>
+        </div>
+        <div class="template-row">
+            <div class="template-label">DIRECCIÓN:</div>
+            <div class="template-value">MZ M2 LOTE 13 URB. JARDINES DE CHILLON</div>
+        </div>
+        <div class="template-row">
+            <div class="template-label">RUC Emisor:</div>
+            <div class="template-value">10414573667</div>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div class="section-title">CLIENTE:</div>
+        <div class="template-row">
+            <div class="template-label">Razón Social:</div>
+            <div class="template-value" id="cliente-razon-social">MUJER SEGURA EN CADA ETAPA</div>
+        </div>
+        <div class="template-row">
+            <div class="template-label">RUC:</div>
+            <div class="template-value" id="cliente-ruc">20610058362</div>
+        </div>
+        <div class="template-row">
+            <div class="template-label">Dirección:</div>
+            <div class="template-value" id="cliente-direccion">Av. Carlos Izaguirre 1198 ZDO PISO.</div>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>DESCRIPCIÓN</th>
+                    <th>CANTIDAD DE MUESTRAS</th>
+                    <th>TOTAL</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Procesamiento de muestras (Servicio de laboratorio)</td>
+                    <td id="cantidad-muestras">3</td>
+                    <td id="total-monto">S/ 150.00</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="template-row total-row">
+            <div class="template-label">TOTAL A PAGAR:</div>
+            <div class="template-value" id="total-pagar">S/ 150.00</div>
+        </div>
+        
+        <div class="footer">
+            <div class="template-row">
+                <div class="template-label">FECHA EMISIÓN:</div>
+                <div class="template-value" id="fecha-emision">30/07/2025</div>
+            </div>
+            <div class="template-row">
+                <div class="template-label">BOLETA N°:</div>
+                <div class="template-value" id="numero-boleta">B001-0000004</div>
+            </div>
+            <div class="template-row">
+                <div class="template-label">FORMA DE PAGO:</div>
+                <div class="template-value">MONEDA: SOLES (S⁄)</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="button-container">
+        <button class="btn" onclick="window.print()">Imprimir Boleta</button>
+        <button class="btn" onclick="generarPDFyEnviar()">Crear PDF y enviar WhatsApp</button>
+        <button class="btn btn-volver" onclick="window.location.href='boletas.html#plantilla-boletas'">Volver</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <script>
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const value = urlParams.get(param);
+            return value ? decodeURIComponent(value) : null;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const razonSocial = getQueryParam('razonSocial') || 'MUJER SEGURA EN CADA ETAPA';
+            const ruc = getQueryParam('ruc') || '20610058362';
+            const direccion = getQueryParam('direccion') || 'Av. Carlos Izaguirre 1198 ZDO PISO.';
+            const numMuestras = getQueryParam('numMuestras') || '3';
+            const total = getQueryParam('total') || '150.00';
+            const codigo = getQueryParam('codigo') || 'B001-0000004';
+            
+            const now = new Date();
+            const dia = now.getDate().toString().padStart(2, '0');
+            const mes = (now.getMonth() + 1).toString().padStart(2, '0');
+            const anio = now.getFullYear();
+            const fecha = `${dia}/${mes}/${anio}`;
+            
+            document.getElementById('cliente-razon-social').textContent = razonSocial;
+            document.getElementById('cliente-ruc').textContent = ruc;
+            document.getElementById('cliente-direccion').textContent = direccion;
+            document.getElementById('cantidad-muestras').textContent = numMuestras;
+            document.getElementById('total-monto').textContent = `S/ ${parseFloat(total).toFixed(2)}`;
+            document.getElementById('total-pagar').textContent = `S/ ${parseFloat(total).toFixed(2)}`;
+            document.getElementById('fecha-emision').textContent = fecha;
+            document.getElementById('numero-boleta').textContent = codigo;
+        });
+
+        async function generarPDFyEnviar() {
+            const { jsPDF } = window.jspdf;
+            const razonSocial = document.getElementById('cliente-razon-social').textContent;
+            const fecha = document.getElementById('fecha-emision').textContent;
+            const fechaLimpia = fecha.replace(/\//g, '-');
+            const nombreArchivo = `${razonSocial.replace(/\s+/g, '_')}_${fechaLimpia}.pdf`;
+            
+            const elemento = document.getElementById('boleta-content');
+            
+            const canvas = await html2canvas(elemento, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                width: 794,
+                height: 1123
+            });
+            
+            const imgData = canvas.toDataURL('image/jpeg', 1.0);
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            const imgWidth = canvas.width;
+            const imgHeight = canvas.height;
+            const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+            const imgX = (pdfWidth - imgWidth * ratio) / 2;
+            
+            pdf.addImage(imgData, 'JPEG', imgX, 0, imgWidth * ratio, imgHeight * ratio);
+            pdf.save(nombreArchivo);
+            
+            const telefono = prompt('Ingrese el número de WhatsApp del cliente (incluir código de país, ej: 51987654321):');
+            if (telefono) {
+                alert('El PDF ha sido generado y descargado. Para enviar por WhatsApp:\n1. Abra el archivo descargado\n2. Abra WhatsApp y envíe el archivo al cliente');
+            }
+        }
+    </script>
+</body>
+</html>
