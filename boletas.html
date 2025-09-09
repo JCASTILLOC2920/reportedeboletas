@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JC PATH LAB - Generador de Boletas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/dexie@3.2.2/dist/dexie.js"></script>
+    <!-- Incluir jsPDF desde CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="overflow:auto;">
+    <header>
+        <div class="header-container">
+            <div class="logo-section" id="logoSection">
+                <div class="logo"><i class="fas fa-microscope"></i></div>
+                <div class="title">JC PATH LAB<span>Generador de Boletas de Laboratorio de Anatomía Patológica</span></div>
+            </div>
+            
+            <nav>
+                <ul class="nav-menu">
+                    <li><a href="#" class="nav-link active" data-section="registro">Registro de cliente</a></li>
+                    <li><a href="#" class="nav-link" data-section="listado">Listado de clientes</a></li>
+                    <li><a href="#" class="nav-link" data-section="plantilla">Plantilla de boleta</a></li>
+                    <li><a href="#" class="nav-link" data-section="registro-boletas">Registro de boletas</a></li>
+                </ul>
+                <button class="hamburger"><span></span><span></span><span></span></button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <section class="content" id="inicio" style="display:none;">
+            <h1>Sistema de Gestión de Laboratorio de Anatomía Patológica</h1>
+            <p>JC PATH LAB ofrece soluciones avanzadas para la generación de boletas de laboratorio, gestión de clientes y seguimiento de muestras patológicas con los más altos estándares de calidad.</p>
+            
+            <div class="features">
+                <div class="feature-card"><i class="fas fa-user-plus"></i><h3>Registro de Clientes</h3><p>Gestión completa de información de clientes y pacientes con historial de muestras.</p></div>
+                <div class="feature-card"><i class="fas fa-list-alt"></i><h3>Listado de Clientes</h3><p>Acceso rápido a todos los clientes registrados dengan opciones de búsqueda avanzada.</p></div>
+                <div class="feature-card"><i class="fas fa-file-medical"></i><h3>Plantillas de Boletas</h3><p>Generación profesional de boletas con diseños personalizables y datos precisos.</p></div>
+                <div class="feature-card"><i class="fas fa-receipt"></i><h3>Registro de Boletas</h3><p>Gestión permanente de boletas generadas con seguimiento de pagos y estado.</p></div>
+                <div class="feature-card"><i class="fas fa-users"></i><h3>Usuarios del Sistema</h3><p>Gestión de usuarios y permisos del sistema administrativo.</p></div>
+            </div>
+        </section>
+
+        <section class="page-section" id="registro" style="display:block;">
+            <div class="form-container">
+                <h2 class="section-title">Registro de Cliente</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="razon-social">Razón Social</label>
+                        <input type="text" id="razon-social" placeholder="Ingrese razón social">
+                        <div class="error-message" id="razon-social-error"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ruc">RUC</label>
+                        <input type="text" id="ruc" placeholder="Número de RUC">
+                        <div class="error-message" id="ruc-error"></div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="direccion">Dirección</label>
+                        <input type="text" id="direccion" placeholder="Dirección completa">
+                        <div class="error-message" id="direccion-error"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="telefono">Teléfono</label>
+                        <input type="text" id="telefono" placeholder="Número de teléfono">
+                        <div class="error-message" id="telefono-error"></div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="Correo electrónico">
+                    <div class="error-message" id="email-error"></div>
+                </div>
+                
+                <button class="btn btn-block" id="registrar-cliente">Registrar Cliente</button>
+            </div>
+        </section>
+
+        <section class="page-section" id="listado" style="display:none;">
+            <div class="table-container">
+                <h2 class="section-title">Listado de Clientes</h2>
+                
+                <table id="clientes-table">
+                    <thead>
+                        <tr>
+                            <th>Numero de orden</th>
+                            <th>Razón Social</th>
+                            <th>RUC</th>
+                            <th>Dirección</th>
+                            <th>Teléfono</th>
+                            <th>Email</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientes-body"></tbody>
+                </table>
+                
+                <div class="pagination" id="clientes-pagination">
+                    <button class="pagination-btn" id="prev-clientes" disabled>Anterior</button>
+                    <div class="page-info">Página <span id="clientes-page">1</span></div>
+                    <button class="pagination-btn" id="next-clientes">Siguiente</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="page-section" id="plantilla" style="display:none;">
+            <div class="a4-container">
+                <div class="template-preview">
+                    <div class="template-header">
+                        <h2>JC PATH LAB</h2>
+                        <p>Laboratorio de Anatomía Patológica</p>
+                    </div>
+                    <div class="boleta-title">BOLETA DE VENTA</div>
+                    
+                    <div class="template-body">
+                        <div class="template-row">
+                            <div class="template-label">EMISOR:</div>
+                            <div class="template-value"></div>
+                        </div>
+                        
+                        <div class="template-row">
+                            <div class="template-label">NOMBRE:</div>
+                            <div class="template-value">Josehp Christopher Castillo Cuenca</div>
+                        </div>
+                        
+                        <div class="template-row">
+                            <div class="template-label">DOCUMENTO:</div>
+                            <div class="template-value">DNI 41457466</div>
+                        </div>
+                        
+                        <div class="template-row">
+                            <div class="template-label">DIRECCIÓN:</div>
+                            <div class="template-value">MZ M2 LOTE 13 URB. JARDINES DE CHILLON</div>
+                        </div>
+                        
+                        <div class="template-row">
+                            <div class="template-label">RUC Emisor:</div>
+                            <div class="template-value">10414574667</div>
+                        </div>
+                        
+                        <div class="template-row" style="border-bottom:2px solid var(--border);margin:10mm 0;"></div>
+                        
+                        <div class="template-row">
+                            <div class="template-label" style="font-size:1.2em;color:var(--primary);">CLIENTE:</div>
+                            <div class="template-value"></div>
+                        </div>
+                        
+                        <div class="template-row">
+                            <div class="template-label">Razón Social:</div>
+                            <div class="template-value">
+                                <select id="cliente-select" class="costo-input"><option value="">Seleccione un cliente</option></select>
+                            </div>
+                        </div>
+                        
+                        <div class="template-row">
+                            <div class="template-label">RUC:</div>
+                            <div class="template-value" id="ruc-cliente"></div>
+                        </div>
+                        
+                        <div class="template-row">
+                            <div class="template-label">Dirección:</div>
+                            <div class="template-value" id="direccion-cliente"></div>
+                        </div>
+                        
+                        <div class="template-row">
+                            <div class="template-label">Número de muestras:</div>
+                            <div class="template-value">
+                                <input type="number" id="num-muestras" min="1" value="1" class="costo-input">
+                            </div>
+                        </div>
+                        
+                        <div id="costos-container"><div class="template-row costo-item">
+                            <div class="template-label">Muestra 1 Costo:</div>
+                            <div class="template-value">
+                                <input type="number" class="costo-input costo-muestra" min="0" step="0.01" placeholder="S/ 0.00" data-index="1">
+                            </div>
+                        </div></div>
+                        
+                        <div class="total-container">
+                            <div class="template-label">Pago total:</div>
+                            <div class="template-value" id="pago-total">S/ 0.00</div>
+                        </div>
+                    </div>
+                    
+                    <div class="location-date">Puente Piedra, <span id="current-date">17 de agosto de 2025</span></div>
+                </div>
+            </div>
+            
+            <div class="no-print centered-button"> <!-- Cambiado a clase centered-button -->
+                <button class="btn" id="guardar-boleta"><i class="fas fa-save"></i> Guardar Boleta</button>
+            </div>
+        </section>
+        
+        <section class="page-section" id="registro-boletas" style="display:none;">
+            <div class="table-container">
+                <h2 class="section-title">Registro de Boletas</h2>
+                <p class="section-description" style="text-align:center;margin-bottom:20px;color:#555;">Este registro permanece permanente y solo puede ser eliminado por el administrador</p>
+                
+                <table id="boletas-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Razón Social</th>
+                            <th>RUC</th>
+                            <th>Dirección</th>
+                            <th>N° Muestras</th>
+                            <th>Monto</th>
+                            <th>Cancelado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="boletas-body"></tbody>
+                </table>
+                
+                <div class="pagination" id="boletas-pagination">
+                    <button class="pagination-btn" id="prev-boletas" disabled>Anterior</button>
+                    <div class="page-info">Página <span id="boletas-page">1</span></div>
+                    <button class="pagination-btn" id="next-boletas">Siguiente</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="page-section" id="usuarios-sistema" style="display:none;">
+            <div class="form-container">
+                <h2 class="section-title">Usuarios del Sistema</h2>
+                <p style="text-align:center;margin-bottom:30px;">Gestión de usuarios y permisos del sistema administrativo</p>
+                
+                <div class="form-group">
+                    <label for="nombre-usuario">Nombre de Usuario</label>
+                    <input type="text" id="nombre-usuario" placeholder="Ingrese nombre de usuario">
+                </div>
+                
+                <div class="form-group">
+                    <label for="email-usuario">Email</label>
+                    <input type="email" id="email-usuario" placeholder="Correo electrónico del usuario">
+                </div>
+                
+                <div class="form-group">
+                    <label for="rol-usuario">Rol</label>
+                    <select id="rol-usuario" class="costo-input">
+                        <option value="">Seleccione un rol</option>
+                        <option value="administrador">Administrador</option>
+                        <option value="usuario">Usuario</option>
+                        <option value="consulta">Consulta</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-block" id="guardar-usuario">Guardar Usuario</button>
+            </div>
+        </section>
+    </div>
+
+    <div id="backup-status" class="backup-status"></div>
+
+    <script src="script.js?v=1.8" defer></script>
+</body>
+</html>

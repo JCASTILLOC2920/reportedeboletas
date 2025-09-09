@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JC PATH LAB - Gestión de Boletas</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo" id="logoSection" data-section="inicio">
+                <img src="https://i.ibb.co/68Z6R2h/logo-placeholder.png" alt="Logo JC PATH LAB" class="logo-img">
+                <span class="logo-text">JC PATH LAB</span>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="#" class="nav-link" data-section="inicio">Inicio</a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-section="registro">Registrar Cliente</a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-section="listado">Ver Clientes</a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-section="plantilla">Crear Boleta</a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-section="registro-boletas">Ver Boletas</a></li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Sección de Inicio -->
+        <section id="inicio" class="active">
+            <h1>Bienvenido a JC PATH LAB</h1>
+            <p>Sistema de gestión de clientes y boletas de venta.</p>
+            <div class="card-container">
+                <div class="card" data-section="registro">
+                    <i class="fas fa-user-plus"></i>
+                    <h3>Registrar Cliente</h3>
+                    <p>Añade nuevos clientes al sistema.</p>
+                </div>
+                <div class="card" data-section="plantilla">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <h3>Crear Boleta</h3>
+                    <p>Genera una nueva boleta de venta.</p>
+                </div>
+                <div class="card" data-section="listado">
+                    <i class="fas fa-users"></i>
+                    <h3>Ver Clientes</h3>
+                    <p>Consulta y gestiona la lista de clientes.</p>
+                </div>
+                <div class="card" data-section="registro-boletas">
+                    <i class="fas fa-receipt"></i>
+                    <h3>Ver Boletas</h3>
+                    <p>Consulta el historial de boletas emitidas.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Registro de Clientes -->
+        <section id="registro" style="display: none;">
+            <h2>Registro de Nuevo Cliente</h2>
+            <form id="cliente-form" class="form-container">
+                <div class="form-group">
+                    <label for="razon-social">Razón Social:</label>
+                    <input type="text" id="razon-social" required>
+                </div>
+                <div class="form-group">
+                    <label for="ruc">RUC:</label>
+                    <input type="text" id="ruc" required>
+                </div>
+                <div class="form-group">
+                    <label for="direccion">Dirección:</label>
+                    <input type="text" id="direccion" required>
+                </div>
+                <div class="form-group">
+                    <label for="telefono">Teléfono:</label>
+                    <input type="text" id="telefono">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email">
+                </div>
+                <button type="button" id="registrar-cliente" class="btn">Registrar Cliente</button>
+            </form>
+        </section>
+
+        <!-- Sección de Listado de Clientes -->
+        <section id="listado" style="display: none;">
+            <h2>Listado de Clientes</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Razón Social</th>
+                            <th>RUC</th>
+                            <th>Dirección</th>
+                            <th>Teléfono</th>
+                            <th>Email</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientes-body"></tbody>
+                </table>
+            </div>
+            <div class="pagination">
+                <button id="prev-clientes" class="btn">Anterior</button>
+                <span>Página <span id="clientes-page">1</span></span>
+                <button id="next-clientes" class="btn">Siguiente</button>
+            </div>
+        </section>
+
+        <!-- Sección de Plantilla de Boleta -->
+        <section id="plantilla" style="display: none;">
+            <h2>Crear Nueva Boleta</h2>
+            <form id="boleta-form" class="form-container">
+                <div class="form-group">
+                    <label for="cliente-select">Seleccionar Cliente:</label>
+                    <select id="cliente-select"></select>
+                </div>
+                <div class="template-details">
+                    <div class="template-row">
+                        <div class="template-label">RUC:</div>
+                        <div id="ruc-cliente" class="template-value"></div>
+                    </div>
+                    <div class="template-row">
+                        <div class="template-label">Dirección:</div>
+                        <div id="direccion-cliente" class="template-value"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="num-muestras">Número de Muestras:</label>
+                    <input type="number" id="num-muestras" value="1" min="1">
+                </div>
+                <div id="costos-container"></div>
+                <div class="template-total">
+                    <strong>Pago Total:</strong>
+                    <span id="pago-total">S/ 0.00</span>
+                </div>
+                <button type="button" id="guardar-boleta" class="btn">Guardar Boleta</button>
+            </form>
+        </section>
+
+        <!-- Sección de Registro de Boletas -->
+        <section id="registro-boletas" style="display: none;">
+            <h2>Historial de Boletas</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Razón Social</th>
+                            <th>RUC</th>
+                            <th>Dirección</th>
+                            <th>N° Muestras</th>
+                            <th>Total</th>
+                            <th>Cancelado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="boletas-body"></tbody>
+                </table>
+            </div>
+            <div class="pagination">
+                <button id="prev-boletas" class="btn">Anterior</button>
+                <span>Página <span id="boletas-page">1</span></span>
+                <button id="next-boletas" class="btn">Siguiente</button>
+            </div>
+        </section>
+        
+        <!-- Sección de Usuarios (Placeholder) -->
+        <section id="usuarios-sistema" style="display: none;">
+             <h2>Gestión de Usuarios</h2>
+             <p>Esta sección está en construcción.</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 JC PATH LAB. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dexie/3.2.2/dexie.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="script.js?v=1.9"></script>
+</body>
+</html>
