@@ -184,5 +184,33 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dexie/3.2.2/dexie.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="script.js?v=1.9"></script>
+    <script>
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyeH28qC7HnLvHJ6CtIy4FQ7iiZqOAN339gGMCZsCc8pBfBYJ-XsnpMQoKQOwY76TwG/exec";
+
+function guardarBoletaYEnviar(cliente, ruc, direccion, muestras, total, telefono) {
+    fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({cliente: cliente, ruc: ruc, direccion: direccion, muestras: muestras, total: total})
+    }).then(() => {
+        let mensaje = `Hola ${cliente}, adjunto tu boleta por S/${total}.`;
+        window.open(`https://wa.me/51${telefono}?text=${encodeURIComponent(mensaje)}`, '_blank');
+    });
+}
+
+function activarComandoVoz() {
+    const reconocimiento = new webkitSpeechRecognition();
+    reconocimiento.lang = 'es-PE';
+    reconocimiento.onresult = function(event) {
+        const comando = event.results[0][0].transcript.toLowerCase();
+        let regex = /boleta de (\d+) soles a (.*)/;
+        let coincidencia = comando.match(regex);
+        if(coincidencia) {
+            alert(`Cliente: ${coincidencia[2]} | Total: S/${coincidencia[1]}. Dale a Guardar.`);
+        }
+    };
+    reconocimiento.start();
+}
+    </script>
 </body>
+
 </html>
