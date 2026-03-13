@@ -456,5 +456,73 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupEventListeners();
     renderCostoInputs();
     await Promise.all([renderClientesTable(), renderBoletasTable(), populateClientSelect()]);
-    showSection('inicio');
+    
+    // --- NUEVO: Control de flujo AntiGravity ---
+    if (sessionStorage.getItem('ag_auth') === 'true') {
+        document.getElementById('ag-lock-screen').style.display = 'none';
+        showSection('inicio');
+        leerOrdenesAntiGravity(); // Revisa si hay URL al recargar
+    } else {
+        // Se queda en la pantalla de bloqueo, no hace showSection
+    }
 });
+
+// ==========================================
+// MÓDULO ANTIGRAVITY - SEGURIDAD Y RECEPCIÓN
+// ==========================================
+
+const USUARIO_MAESTRO = "admin";
+const CLAVE_MAESTRA = "JCPATH2026";
+
+function desbloquearSistema() {
+    const user = document.getElementById('ag-user').value.trim();
+    const pass = document.getElementById('ag-pass').value;
+
+    if (user === USUARIO_MAESTRO && pass === CLAVE_MAESTRA) {
+        sessionStorage.setItem('ag_auth', 'true');
+        document.getElementById('ag-lock-screen').style.display = 'none';
+        leerOrdenesAntiGravity(); 
+    } else {
+        document.getElementById('ag-error').style.display = 'block';
+    }
+}
+
+async function leerOrdenesAntiGravity() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('bot') !== 'true') return;
+
+    const clienteBusqueda = urlParams.get('cliente');
+    const muestrasStr = urlParams.get('muestras');
+    const numMuestras = muestrasStr ? parseInt(muestrasStr) : 1;
+
+    if (clienteBusqueda) {
+        console.log("AntiGravity: Ejecutando orden para", clienteBusqueda);
+        
+        // 1. Ir a la sección
+        showSection('plantilla');
+
+        // 2. Buscar cliente en la base local
+        const clientes = await db.clientes.toArray();
+        const clienteEncontrado = clientes.find(c => 
+            c.razonSocial.toLowerCase().includes(clienteBusqueda.toLowerCase())
+        );
+
+        if (clienteEncontrado) {
+            // 3. Seleccionar y llenar datos
+            const select = document.getElementById('cliente-select');
+            select.value = clienteEncontrado.id;
+            await handleClientSelectChange(); // Tu función existente
+
+            // 4. Configurar muestras
+            document.getElementById('num-muestras').value = numMuestras;
+            renderCostoInputs(); // Tu función existente
+            
+            // 5. Limpiar URL para evitar bucles si recarga
+            window.history.replaceState({}, document.title, window.location.pathname);
+            
+            console.log("AntiGravity: Formulario listo para supervisión.");
+        } else {
+            alert("AntiGravity: Cliente '" + clienteBusqueda + "' no encontrado en la base local.");
+        }
+    }
+}
