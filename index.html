@@ -8,6 +8,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
+    <div id="ag-lock-screen" style="position: fixed; inset: 0; background: var(--primary-color); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white;">
+        <div style="background: white; padding: 2rem; border-radius: 8px; text-align: center; width: 90%; max-width: 350px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+            <h2 style="color: var(--primary-color); margin-bottom: 1rem;">JC PATH LAB</h2>
+            <p style="color: var(--dark-gray); margin-bottom: 15px;">Acceso Restringido</p>
+            <input type="text" id="ag-user" placeholder="Usuario" style="width: 100%; padding: 10px; margin-bottom: 1rem; border: 1px solid var(--medium-gray); border-radius: 5px;">
+            <input type="password" id="ag-pass" placeholder="Contraseña" style="width: 100%; padding: 10px; margin-bottom: 1rem; border: 1px solid var(--medium-gray); border-radius: 5px;">
+            <button onclick="desbloquearSistema()" class="btn" style="width: 100%;">Ingresar</button>
+            <p id="ag-error" style="color: var(--error-color); margin-top: 10px; display: none;">Credenciales incorrectas</p>
+        </div>
+    </div>
     <header>
         <nav class="navbar">
             <div class="logo" id="logoSection" data-section="inicio">
