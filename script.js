@@ -457,13 +457,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderCostoInputs();
     await Promise.all([renderClientesTable(), renderBoletasTable(), populateClientSelect()]);
     
-    // --- NUEVO: Control de flujo AntiGravity ---
-    if (sessionStorage.getItem('ag_auth') === 'true') {
-        document.getElementById('ag-lock-screen').style.display = 'none';
-        showSection('inicio');
-        leerOrdenesAntiGravity(); // Revisa si hay URL al recargar
+    // 2. Leer parámetros de Auto-Desbloqueo (Modo Dios)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlUser = urlParams.get('user');
+    const urlPass = urlParams.get('pass');
+
+    // 3. Validación de Autenticación (URL o Session)
+    const isAuth = (urlUser === USUARIO_MAESTRO && urlPass === CLAVE_MAESTRA) || sessionStorage.getItem('ag_auth') === 'true';
+
+    if (isAuth) {
+        // Autorizamos la sesión
+        sessionStorage.setItem('ag_auth', 'true');
+        
+        // Ocultamos el bloqueo
+        const lockScreen = document.getElementById('ag-lock-screen');
+        if (lockScreen) lockScreen.style.display = 'none';
+        
+        // Control de flujo para evitar parpadeos
+        if (urlParams.get('bot') === 'true') {
+            leerOrdenesAntiGravity(); 
+        } else {
+            showSection('inicio');
+        }
     } else {
-        // Se queda en la pantalla de bloqueo, no hace showSection
+        // Se mantiene bloqueado
+        const lockScreen = document.getElementById('ag-lock-screen');
+        if (lockScreen) lockScreen.style.display = 'flex';
     }
 });
 
@@ -481,48 +500,68 @@ function desbloquearSistema() {
     if (user === USUARIO_MAESTRO && pass === CLAVE_MAESTRA) {
         sessionStorage.setItem('ag_auth', 'true');
         document.getElementById('ag-lock-screen').style.display = 'none';
-        leerOrdenesAntiGravity(); 
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('bot') === 'true') {
+            leerOrdenesAntiGravity(); 
+        } else {
+            showSection('inicio');
+        }
     } else {
         document.getElementById('ag-error').style.display = 'block';
     }
 }
 
 async function leerOrdenesAntiGravity() {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('bot') !== 'true') return;
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const clienteBusqueda = urlParams.get('cliente');
+        const muestrasStr = urlParams.get('muestras');
+        const numMuestras = Math.max(1, parseInt(muestrasStr) || 1);
 
-    const clienteBusqueda = urlParams.get('cliente');
-    const muestrasStr = urlParams.get('muestras');
-    const numMuestras = muestrasStr ? parseInt(muestrasStr) : 1;
+        if (!clienteBusqueda) {
+            if (sessionStorage.getItem('ag_auth') === 'true') showSection('inicio');
+            return;
+        }
 
-    if (clienteBusqueda) {
-        console.log("AntiGravity: Ejecutando orden para", clienteBusqueda);
-        
-        // 1. Ir a la sección
+        console.log("AntiGravity: Iniciando recepción de orden...");
         showSection('plantilla');
 
-        // 2. Buscar cliente en la base local
+        // Esperar a que el select esté poblado antes de buscar
+        let intentos = 0;
+        const select = document.getElementById('cliente-select');
+        while (select.options.length <= 1 && intentos < 10) {
+            await new Promise(r => setTimeout(r, 200));
+            intentos++;
+        }
+
         const clientes = await db.clientes.toArray();
         const clienteEncontrado = clientes.find(c => 
             c.razonSocial.toLowerCase().includes(clienteBusqueda.toLowerCase())
         );
 
         if (clienteEncontrado) {
-            // 3. Seleccionar y llenar datos
-            const select = document.getElementById('cliente-select');
             select.value = clienteEncontrado.id;
-            await handleClientSelectChange(); // Tu función existente
-
-            // 4. Configurar muestras
+            await handleClientSelectChange();
             document.getElementById('num-muestras').value = numMuestras;
-            renderCostoInputs(); // Tu función existente
+            renderCostoInputs();
             
-            // 5. Limpiar URL para evitar bucles si recarga
+            // Limpiar URL
             window.history.replaceState({}, document.title, window.location.pathname);
-            
-            console.log("AntiGravity: Formulario listo para supervisión.");
+            console.log("AntiGravity: Orden procesada exitosamente.");
         } else {
-            alert("AntiGravity: Cliente '" + clienteBusqueda + "' no encontrado en la base local.");
+            alert(`AntiGravity: Cliente "${clienteBusqueda}" no encontrado.`);
+            showSection('inicio');
         }
+    } catch (e) {
+        console.error("AntiGravity Critical Error:", e);
+        showSection('inicio');
     }
 }
+
+// Soporte para tecla Enter en el login
+document.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter' && document.getElementById('ag-lock-screen').style.display !== 'none') {
+        desbloquearSistema();
+    }
+});
