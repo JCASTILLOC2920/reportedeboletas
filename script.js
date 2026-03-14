@@ -1,7 +1,7 @@
 console.log('script.js version 2.2 loaded');
 
 // --- CONFIGURACIÓN GLOBAL ---
-const scriptURL = 'https://script.google.com/macros/s/AKfycbwFNtXP7zgWWGmIEhthYSRScOuTjeI5WS_yDPtX0zGWM1X2n_boMjitmCcFEbaZmHg/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFNtXP7zgWWGmIEhthYSRScOuTjeI5WS_yDPtX0zGWM1X2n_boMjitmCcFEbaZmHg/exec';
 const { jsPDF } = window.jspdf;
 const PAGE_SIZE = 10;
 let db, currentClientPage = 1, currentBoletaPage = 1;
@@ -33,7 +33,7 @@ async function addClientToSheet(cliente) {
     formData.append('createdAt', cliente.createdAt.toISOString());
 
     try {
-        const response = await fetch(scriptURL, { method: 'POST', body: formData });
+        const response = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: formData });
         const data = await response.json();
         if (data.result !== 'success') {
             throw new Error(data.error);
@@ -63,12 +63,18 @@ async function addBoletaToSheet(boleta) {
     formData.append('fecha', boleta.fecha);
 
     try {
-        const response = await fetch(scriptURL, { method: 'POST', body: formData });
+        const response = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: formData });
         const data = await response.json();
         if (data.result !== 'success') {
             throw new Error(data.error);
         }
         console.log('Boleta agregada a Google Sheets exitosamente.');
+        
+        if (boleta.telefono) {
+            let mensaje = `Hola ${boleta.razonSocial}, adjunto tu boleta por S/${boleta.total}.`;
+            window.open(`https://wa.me/51${boleta.telefono}?text=${encodeURIComponent(mensaje)}`, '_blank');
+        }
+
         return true;
     } catch (error) {
         console.error('Error al agregar boleta en Google Sheets:', error);
@@ -169,9 +175,9 @@ async function handleAddClient() {
 }
 
 async function handleDeleteClient(e) {
-    if (e.target.classList.contains('eliminar-btn')) {
-        const row = e.target.closest('tr');
-        const id = parseInt(row.dataset.id);
+    const button = e.target.closest('.eliminar-btn');
+    if (button) {
+        const id = parseInt(button.dataset.id);
         if (confirm('¿Está seguro de que desea eliminar este cliente? Esta acción no se puede deshacer.')) {
             await db.clientes.delete(id);
             renderClientesTable();
@@ -194,8 +200,10 @@ async function renderClientesTable() {
         return;
     }
 
+    const fragment = document.createDocumentFragment();
+
     clientes.forEach((cliente, index) => {
-        const row = tbody.insertRow();
+        const row = document.createElement('tr');
         row.dataset.id = cliente.id;
         row.innerHTML = `
             <td data-label="#">${(currentClientPage - 1) * PAGE_SIZE + index + 1}</td>
@@ -206,7 +214,13 @@ async function renderClientesTable() {
             <td data-label="Email">${cliente.email}</td>
             <td data-label="Acciones" class="action-buttons"><button class="btn eliminar-btn" data-id="${cliente.id}">Eliminar</button></td>
         `;
+        fragment.appendChild(row);
     });
+
+    tbody.appendChild(fragment);
+    
+    // Sugerencia para Garbage Collection de array local
+    clientes.length = 0;
 }
 
 async function populateClientSelect() {
@@ -278,23 +292,28 @@ async function handleAddBoleta() {
 
 async function handleBoletaActions(e) {
     const target = e.target;
-    if (!target.dataset.id) return;
-    const id = parseInt(target.dataset.id);
+    
+    if (target.classList.contains('cancelado-checkbox')) {
+        const id = parseInt(target.dataset.id);
+        await db.boletas.update(id, { cancelado: target.checked });
+        renderBoletasTable();
+        return;
+    }
 
-    if (target.classList.contains('delete-boleta')) {
+    const button = target.closest('.btn');
+    if (!button || !button.dataset.id) return;
+    
+    const id = parseInt(button.dataset.id);
+
+    if (button.classList.contains('delete-boleta')) {
         if (confirm('¿Está seguro de que desea eliminar esta boleta? Esta acción no se puede deshacer.')) {
             await db.boletas.delete(id);
             renderBoletasTable();
         }
     }
 
-    if (target.classList.contains('print-boleta')) {
+    if (button.classList.contains('print-boleta')) {
         generarPDFBoleta(id);
-    }
-    
-    if (target.classList.contains('cancelado-checkbox')) {
-        await db.boletas.update(id, { cancelado: target.checked });
-        renderBoletasTable();
     }
 }
 
@@ -312,8 +331,10 @@ async function renderBoletasTable() {
         return;
     }
 
+    const fragment = document.createDocumentFragment();
+
     boletas.forEach(boleta => {
-        const row = tbody.insertRow();
+        const row = document.createElement('tr');
         row.dataset.id = boleta.id;
         row.innerHTML = `
             <td data-label="Código">${boleta.codigo}</td>
@@ -328,7 +349,13 @@ async function renderBoletasTable() {
                 <button class="btn eliminar-btn delete-boleta" data-id="${boleta.id}">Eliminar</button>
             </td>
         `;
+        fragment.appendChild(row);
     });
+
+    tbody.appendChild(fragment);
+    
+    // Sugerencia para GC
+    boletas.length = 0;
 }
 
 function renderCostoInputs() {
@@ -447,6 +474,9 @@ async function generarPDFBoleta(id) {
 
     const nombreArchivo = `Boleta_${boleta.razonSocial.replace(/\s+/g, '_')}_${boleta.codigo}.pdf`;
     doc.save(nombreArchivo);
+    
+    // Garbage collection para el objeto PDF
+    boleta = null;
 }
 
 
@@ -469,9 +499,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Autorizamos la sesión
         sessionStorage.setItem('ag_auth', 'true');
         
-        // Ocultamos el bloqueo
+        // Ocultamos el bloqueo y liberamos memoria
         const lockScreen = document.getElementById('ag-lock-screen');
-        if (lockScreen) lockScreen.style.display = 'none';
+        if (lockScreen) lockScreen.remove();
         
         // Control de flujo para evitar parpadeos
         if (urlParams.get('bot') === 'true') {
@@ -499,7 +529,8 @@ function desbloquearSistema() {
 
     if (user === USUARIO_MAESTRO && pass === CLAVE_MAESTRA) {
         sessionStorage.setItem('ag_auth', 'true');
-        document.getElementById('ag-lock-screen').style.display = 'none';
+        const lockScreen = document.getElementById('ag-lock-screen');
+        if (lockScreen) lockScreen.remove();
         
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('bot') === 'true') {
@@ -527,26 +558,23 @@ async function leerOrdenesAntiGravity() {
         console.log("AntiGravity: Iniciando recepción de orden...");
         showSection('plantilla');
 
-        // Esperar a que el select esté poblado antes de buscar
-        let intentos = 0;
-        const select = document.getElementById('cliente-select');
-        while (select.options.length <= 1 && intentos < 10) {
-            await new Promise(r => setTimeout(r, 200));
-            intentos++;
-        }
-
-        const clientes = await db.clientes.toArray();
-        const clienteEncontrado = clientes.find(c => 
-            c.razonSocial.toLowerCase().includes(clienteBusqueda.toLowerCase())
-        );
+        // Buscar cliente directamente en Dexie sin polling del DOM
+        const clienteEncontrado = await db.clientes
+            .filter(c => c.razonSocial.toLowerCase().includes(clienteBusqueda.toLowerCase()))
+            .first();
 
         if (clienteEncontrado) {
+            const select = document.getElementById('cliente-select');
             select.value = clienteEncontrado.id;
-            await handleClientSelectChange();
+            
+            // Inyectar datos directamente en lugar de usar handleClientSelectChange()
+            document.getElementById('ruc-cliente').textContent = clienteEncontrado.ruc;
+            document.getElementById('direccion-cliente').textContent = clienteEncontrado.direccion;
+            
             document.getElementById('num-muestras').value = numMuestras;
             renderCostoInputs();
             
-            // Limpiar URL
+            // Limpiar URL para GC y seguridad
             window.history.replaceState({}, document.title, window.location.pathname);
             console.log("AntiGravity: Orden procesada exitosamente.");
         } else {

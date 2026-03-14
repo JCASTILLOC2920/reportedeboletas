@@ -1,3 +1,7 @@
+/* ==========================================
+   JC PATH LAB - CSS OPTIMIZADO EXTREMO (SPA)
+   ========================================== */
+   
 :root {
     --primary-color: #1a3a5a;
     --secondary-color: #f4f4f9;
@@ -22,8 +26,11 @@ body {
     background-color: var(--secondary-color);
     color: var(--text-color);
     line-height: 1.6;
+    /* Evita que iOS/Android hagan zoom automático al texto */
+    -webkit-text-size-adjust: 100%;
 }
 
+/* --- NAVBAR ACCESIBLE Y ACELERADO --- */
 .navbar {
     display: flex;
     justify-content: space-between;
@@ -34,6 +41,7 @@ body {
     position: sticky;
     top: 0;
     z-index: 1000;
+    will-change: transform; /* Prepara la GPU */
 }
 
 .logo {
@@ -66,9 +74,10 @@ body {
     text-decoration: none;
     color: var(--primary-color);
     font-weight: 500;
-    padding: 5px 10px;
+    padding: 10px 15px; /* Área táctil más grande */
     border-radius: 5px;
     transition: background-color 0.3s, color 0.3s;
+    display: inline-block;
 }
 
 .nav-link:hover, .nav-link.active {
@@ -76,9 +85,11 @@ body {
     color: #fff;
 }
 
+/* --- HAMBURGER MENU --- */
 .hamburger {
     display: none;
     cursor: pointer;
+    padding: 10px; /* Fácil de tocar */
 }
 
 .bar {
@@ -87,11 +98,14 @@ body {
     height: 3px;
     margin: 5px auto;
     background-color: var(--primary-color);
-    transition: all 0.3s ease-in-out;
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    will-change: transform, opacity;
 }
 
 main {
     padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 section {
@@ -102,18 +116,13 @@ section {
     margin-bottom: 2rem;
 }
 
-h1 {
+h1, h2 {
     text-align: center;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     color: var(--primary-color);
 }
 
-h2 {
-    text-align: center;
-    margin-bottom: 2rem;
-    color: var(--primary-color);
-}
-
+/* --- CARDS (Aceleración de GPU para hover) --- */
 .card-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -127,13 +136,16 @@ h2 {
     border-radius: 8px;
     text-align: center;
     cursor: pointer;
-    transition: transform 0.3s, box-shadow 0.3s;
     border: 1px solid var(--medium-gray);
+    /* Optimización de hardware para evitar parpadeos */
+    transform: translate3d(0,0,0);
+    will-change: transform, box-shadow;
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translate3d(0, -5px, 0);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
 }
 
 .card i {
@@ -142,18 +154,19 @@ h2 {
     margin-bottom: 1rem;
 }
 
+/* --- FORMS (Ergonomía Móvil) --- */
 .form-container {
     max-width: 600px;
     margin: 0 auto;
 }
 
 .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.5rem; 
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
     font-weight: bold;
     color: var(--dark-gray);
 }
@@ -161,10 +174,19 @@ h2 {
 .form-group input,
 .form-group select {
     width: 100%;
-    padding: 10px;
+    padding: 12px 10px;
     border: 1px solid var(--medium-gray);
     border-radius: 5px;
     font-size: 1rem;
+    min-height: 48px; /* Tamaño mínimo estándar para dedos */
+    background-color: #fff;
+}
+
+/* Evita que los celulares hagan zoom forzado en los inputs */
+@media screen and (max-width: 768px) {
+    .form-group input, .form-group select {
+        font-size: 16px; 
+    }
 }
 
 .btn {
@@ -178,16 +200,24 @@ h2 {
     cursor: pointer;
     font-size: 1.1rem;
     font-weight: bold;
-    transition: background-color 0.3s;
+    transition: background-color 0.2s;
     text-align: center;
+    min-height: 48px;
+    touch-action: manipulation; /* Respuesta táctil más rápida */
 }
 
 .btn:hover {
     background-color: #3a7ac8;
 }
 
+.btn:active {
+    transform: scale(0.98);
+}
+
+/* --- TABLAS (Adaptables) --- */
 .table-container {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* Scroll suave en móviles */
 }
 
 table {
@@ -211,26 +241,25 @@ tbody tr:nth-child(even) {
     background-color: var(--light-gray);
 }
 
-tbody tr:hover {
-    background-color: #e9eff5;
-}
-
+/* --- PAGINACIÓN --- */
 .pagination {
     display: flex;
     justify-content: center;
     align-items: center;
     margin-top: 1.5rem;
+    gap: 10px;
 }
 
 .pagination button {
-    margin: 0 10px;
     width: auto;
+    min-width: 100px;
 }
 
 .pagination span {
     font-weight: bold;
 }
 
+/* --- TEMPLATE DE BOLETAS --- */
 .template-details {
     margin: 1.5rem 0;
     padding: 1rem;
@@ -242,8 +271,10 @@ tbody tr:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 0;
+    padding: 10px 0;
     border-bottom: 1px solid var(--medium-gray);
+    flex-wrap: wrap; /* Evita que los montos se salgan de pantalla */
+    gap: 10px;
 }
 
 .template-row:last-child {
@@ -256,13 +287,15 @@ tbody tr:hover {
 
 .template-total {
     margin-top: 1.5rem;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: bold;
     text-align: right;
+    color: var(--primary-color);
 }
 
 #costos-container .costo-muestra {
     width: auto;
+    min-width: 120px;
     text-align: right;
 }
 
@@ -272,48 +305,68 @@ footer {
     background-color: #fff;
     margin-top: 2rem;
     border-top: 1px solid var(--medium-gray);
+    font-size: 0.9rem;
+    color: var(--dark-gray);
 }
 
-/* --- ESTILOS PARA MÓVILES --- */
+/* ==========================================
+   MOBILE-FIRST (CELULARES Y TABLETS)
+   ========================================== */
 @media (max-width: 768px) {
     .navbar {
         padding: 0.8rem 1rem;
-    }
-
-    .nav-menu {
-        position: fixed;
-        left: -100%;
-        top: 60px; /* Altura del navbar */
-        flex-direction: column;
-        background-color: #fff;
-        width: 100%;
-        height: calc(100vh - 60px);
-        text-align: center;
-        transition: 0.3s;
-        box-shadow: 0 10px 27px rgba(0, 0, 0, 0.05);
-        padding-top: 2rem;
-    }
-
-    .nav-menu.active {
-        left: 0;
-    }
-
-    .nav-item {
-        margin: 1.5rem 0;
     }
 
     .hamburger {
         display: block;
     }
 
-    .hamburger.active .bar:nth-child(2) {
-        opacity: 0;
+    /* Animación del menú lateral por GPU */
+    .nav-menu {
+        position: fixed;
+        top: 60px;
+        right: 0;
+        width: 100%;
+        height: calc(100vh - 60px);
+        background-color: #fff;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        padding-top: 2rem;
+        box-shadow: -5px 10px 20px rgba(0,0,0,0.1);
+        
+        /* Uso de translate en vez de left/right ahorra CPU */
+        transform: translateX(100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: transform;
+        z-index: 999;
     }
 
+    .nav-menu.active {
+        transform: translateX(0);
+    }
+
+    .nav-item {
+        margin: 1rem 0;
+        width: 100%;
+        text-align: center;
+    }
+
+    .nav-link {
+        display: block;
+        width: 80%;
+        margin: 0 auto;
+        padding: 15px;
+        font-size: 1.1rem;
+    }
+
+    /* Animación del ícono Hamburguesa */
     .hamburger.active .bar:nth-child(1) {
         transform: translateY(8px) rotate(45deg);
     }
-
+    .hamburger.active .bar:nth-child(2) {
+        opacity: 0;
+    }
     .hamburger.active .bar:nth-child(3) {
         transform: translateY(-8px) rotate(-45deg);
     }
@@ -326,7 +379,7 @@ footer {
         padding: 1.5rem 1rem;
     }
 
-    /* Tablas Responsivas */
+    /* Transformación de Tablas a Tarjetas Táctiles */
     table, thead, tbody, th, td, tr {
         display: block;
     }
@@ -338,55 +391,72 @@ footer {
     }
 
     tr {
+        background-color: #fff;
         border: 1px solid var(--medium-gray);
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
         border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        overflow: hidden;
     }
     
     tbody tr:nth-child(even) {
-        background-color: #fff; /* Reset even row color for card view */
+        background-color: #fff;
     }
 
     td {
         border: none;
         border-bottom: 1px solid #eee;
         position: relative;
-        padding-left: 50%;
+        padding: 12px 15px 12px 45%; /* Espacio para el label izquierdo */
         text-align: right;
-        min-height: 38px; /* Ensure consistent height */
-        display: flex; /* Align items better */
+        min-height: 48px; 
+        
+        /* Reglas Anti-Desbordamiento */
+        word-break: break-word;
+        overflow-wrap: anywhere;
+        
+        display: flex;
+        justify-content: flex-end; /* Alinea textos largos a la derecha */
         align-items: center;
-        justify-content: flex-end;
     }
 
-    td:before {
+    td::before {
         content: attr(data-label);
         position: absolute;
-        left: 10px;
-        width: 45%;
-        padding-right: 10px;
-        white-space: nowrap;
+        left: 15px;
+        width: 40%;
         text-align: left;
         font-weight: bold;
         color: var(--primary-color);
+        white-space: nowrap;
     }
 
     td:last-child {
-        border-bottom: 0;
+        border-bottom: none;
+        padding: 15px;
+        justify-content: center;
     }
     
     .action-buttons {
-        justify-content: flex-start; /* Align buttons to the left in card view */
-        padding-left: 10px;
+        display: flex;
+        flex-direction: column; /* Apila los botones de acción */
+        gap: 10px;
+        width: 100%;
+        padding-left: 0 !important;
     }
 
     .action-buttons button {
-        width: auto; /* Allow buttons to size to content */
-        padding: 8px 12px;
-        font-size: 0.9rem;
+        width: 100%;
+        margin: 0;
+        padding: 12px;
+        font-size: 1rem;
     }
 
+    .pagination {
+        flex-wrap: wrap;
+    }
+    
     .pagination button {
-        padding: 8px 12px;
+        flex-grow: 1; /* Botones Anteriror/Siguiente anchos */
     }
 }
