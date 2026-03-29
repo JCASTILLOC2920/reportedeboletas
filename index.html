@@ -3,33 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JC PATH LAB - Gestión de Boletas</title>
+    <title>JC PATH LAB | Sistema de Gestión de Boletas</title>
+    <meta name="description" content="Sistema de administración de clientes y boletas de venta para JC PATH LAB. Optimizado para alto rendimiento.">
+    
+    <!-- Design System & Components -->
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+    
+    <!-- Dependencies -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/dexie/3.2.2/dexie.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script defer src="script.js"></script>
 </head>
 <body>
-    <div id="ag-lock-screen" style="position: fixed; inset: 0; background: var(--primary-color); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white;">
-        <div style="background: white; padding: 2rem; border-radius: 8px; text-align: center; width: 90%; max-width: 350px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-            <h2 style="color: var(--primary-color); margin-bottom: 1rem;">JC PATH LAB</h2>
-            <p style="color: var(--dark-gray); margin-bottom: 15px;">Acceso Restringido</p>
-            <input type="text" id="ag-user" placeholder="Usuario" style="width: 100%; padding: 10px; margin-bottom: 1rem; border: 1px solid var(--medium-gray); border-radius: 5px;">
-            <input type="password" id="ag-pass" placeholder="Contraseña" style="width: 100%; padding: 10px; margin-bottom: 1rem; border: 1px solid var(--medium-gray); border-radius: 5px;">
-            <button onclick="desbloquearSistema()" class="btn" style="width: 100%;">Ingresar</button>
-            <p id="ag-error" style="color: var(--error-color); margin-top: 10px; display: none;">Credenciales incorrectas</p>
+    <!-- Capa de Seguridad de Grado Militar -->
+    <div id="ag-lock-screen">
+        <div class="lock-box">
+            <h2 style="margin-bottom: 0.5rem; color: #fff;">JC PATH LAB</h2>
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">Acceso Protegido - Protocolo Antigravity</p>
+            
+            <div class="form-group">
+                <input type="text" id="ag-user" placeholder="Usuario de Acceso" aria-label="Usuario">
+            </div>
+            <div class="form-group">
+                <input type="password" id="ag-pass" placeholder="Contraseña de Seguridad" aria-label="Contraseña">
+            </div>
+            
+            <button id="btn-ingresar" class="btn" style="width: 100%;">AUTORIZAR INGRESO</button>
+            <p id="ag-error" style="color: var(--error); margin-top: 1rem; display: none; font-size: 0.85rem;">Credenciales Inválidas</p>
         </div>
     </div>
+
+    <!-- Navegación Principal -->
     <header>
         <nav class="navbar">
-            <div class="logo" id="logoSection" data-section="inicio">
+            <div class="logo" data-section="inicio">
                 <img src="https://i.ibb.co/68Z6R2h/logo-placeholder.png" alt="Logo JC PATH LAB" class="logo-img">
                 <span class="logo-text">JC PATH LAB</span>
             </div>
             <ul class="nav-menu">
-                <li class="nav-item"><a href="#" class="nav-link" data-section="inicio">Inicio</a></li>
-                <li class="nav-item"><a href="#" class="nav-link" data-section="registro">Registrar Cliente</a></li>
-                <li class="nav-item"><a href="#" class="nav-link" data-section="listado">Ver Clientes</a></li>
-                <li class="nav-item"><a href="#" class="nav-link" data-section="plantilla">Crear Boleta</a></li>
-                <li class="nav-item"><a href="#" class="nav-link" data-section="registro-boletas">Ver Boletas</a></li>
+                <li><a href="#" class="nav-link active" data-section="inicio">Inicio</a></li>
+                <li><a href="#" class="nav-link" data-section="registro">Nuevo Cliente</a></li>
+                <li><a href="#" class="nav-link" data-section="listado">Ver Clientes</a></li>
+                <li><a href="#" class="nav-link" data-section="plantilla">Crear Boleta</a></li>
+                <li><a href="#" class="nav-link" data-section="registro-boletas">Historial</a></li>
             </ul>
             <div class="hamburger">
                 <span class="bar"></span>
@@ -39,188 +57,159 @@
         </nav>
     </header>
 
+    <!-- Contenedor de Aplicación -->
     <main>
-        <!-- Sección de Inicio -->
+        <!-- Dashboard de Control -->
         <section id="inicio" class="active">
-            <h1>Bienvenido a JC PATH LAB</h1>
-            <p>Sistema de gestión de clientes y boletas de venta.</p>
+            <h1>Panel Central</h1>
+            <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem;">Sistema Operativo para Gestión de Boletas de Laboratorio</p>
+            
             <div class="card-container">
                 <div class="card" data-section="registro">
                     <i class="fas fa-user-plus"></i>
-                    <h3>Registrar Cliente</h3>
-                    <p>Añade nuevos clientes al sistema.</p>
+                    <h3>Registro</h3>
+                    <p>Integrar nuevo cliente al sistema.</p>
                 </div>
                 <div class="card" data-section="plantilla">
                     <i class="fas fa-file-invoice-dollar"></i>
-                    <h3>Crear Boleta</h3>
-                    <p>Genera una nueva boleta de venta.</p>
+                    <h3>Emisión</h3>
+                    <p>Generar boleta de venta electrónica.</p>
                 </div>
                 <div class="card" data-section="listado">
                     <i class="fas fa-users"></i>
-                    <h3>Ver Clientes</h3>
-                    <p>Consulta y gestiona la lista de clientes.</p>
+                    <h3>Base de Datos</h3>
+                    <p>Gestionar archivos de clientes.</p>
                 </div>
                 <div class="card" data-section="registro-boletas">
-                    <i class="fas fa-receipt"></i>
-                    <h3>Ver Boletas</h3>
-                    <p>Consulta el historial de boletas emitidas.</p>
+                    <i class="fas fa-history"></i>
+                    <h3>Historial</h3>
+                    <p>Auditoría de boletas generadas.</p>
                 </div>
             </div>
         </section>
 
-        <!-- Sección de Registro de Clientes -->
-        <section id="registro" style="display: none;">
-            <h2>Registro de Nuevo Cliente</h2>
-            <form id="cliente-form" class="form-container">
-                <div class="form-group">
-                    <label for="razon-social">Razón Social:</label>
-                    <input type="text" id="razon-social" required>
-                </div>
-                <div class="form-group">
-                    <label for="ruc">RUC:</label>
-                    <input type="text" id="ruc" required>
-                </div>
-                <div class="form-group">
-                    <label for="direccion">Dirección:</label>
-                    <input type="text" id="direccion" required>
-                </div>
-                <div class="form-group">
-                    <label for="telefono">Teléfono:</label>
-                    <input type="text" id="telefono">
-                </div>
-                <div class="form-group">
-                    <label for="email">Email:</label>
-                    <input type="email" id="email">
-                </div>
-                <button type="button" id="registrar-cliente" class="btn">Registrar Cliente</button>
-            </form>
+        <!-- Registro de Clientes -->
+        <section id="registro">
+            <h2>Ingreso de Datos de Cliente</h2>
+            <div class="form-container">
+                <form id="cliente-form">
+                    <div class="form-group">
+                        <label>Razón Social:</label>
+                        <input type="text" id="razon-social" required placeholder="Nombre Comercial">
+                    </div>
+                    <div class="form-group">
+                        <label>RUC (11 dígitos):</label>
+                        <input type="text" id="ruc" required placeholder="Número de Identificación">
+                    </div>
+                    <div class="form-group">
+                        <label>Dirección Fiscal:</label>
+                        <input type="text" id="direccion" required placeholder="Ubicación registrada">
+                    </div>
+                    <div class="form-group">
+                        <label>Contacto Telefónico:</label>
+                        <input type="text" id="telefono" placeholder="WhatsApp / Fijo">
+                    </div>
+                    <div class="form-group">
+                        <label>Correo Electrónico:</label>
+                        <input type="email" id="email" placeholder="example@domain.com">
+                    </div>
+                    <button type="button" id="registrar-cliente" class="btn">DESPLEGAR REGISTRO</button>
+                </form>
+            </div>
         </section>
 
-        <!-- Sección de Listado de Clientes -->
-        <section id="listado" style="display: none;">
-            <h2>Listado de Clientes</h2>
+        <!-- Listado de Clientes -->
+        <section id="listado">
+            <h2>Repositorio de Clientes</h2>
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
-                            <th>#</th>
+                            <th>ID</th>
                             <th>Razón Social</th>
                             <th>RUC</th>
-                            <th>Dirección</th>
+                            <th>Ubicación</th>
                             <th>Teléfono</th>
                             <th>Email</th>
-                            <th>Acciones</th>
+                            <th>Acción</th>
                         </tr>
                     </thead>
                     <tbody id="clientes-body"></tbody>
                 </table>
             </div>
             <div class="pagination">
-                <button id="prev-clientes" class="btn">Anterior</button>
-                <span>Página <span id="clientes-page">1</span></span>
-                <button id="next-clientes" class="btn">Siguiente</button>
+                <button id="prev-clientes" class="btn">Retroceder</button>
+                <span id="clientes-page">1</span>
+                <button id="next-clientes" class="btn">Avanzar</button>
             </div>
         </section>
 
-        <!-- Sección de Plantilla de Boleta -->
-        <section id="plantilla" style="display: none;">
-            <h2>Crear Nueva Boleta</h2>
-            <form id="boleta-form" class="form-container">
+        <!-- Creación de Boleta -->
+        <section id="plantilla">
+            <h2>Generador de Boleta de Venta</h2>
+            <div class="form-container">
                 <div class="form-group">
-                    <label for="cliente-select">Seleccionar Cliente:</label>
+                    <label>Cliente Objetivo:</label>
                     <select id="cliente-select"></select>
                 </div>
+                
                 <div class="template-details">
                     <div class="template-row">
-                        <div class="template-label">RUC:</div>
-                        <div id="ruc-cliente" class="template-value"></div>
+                        <span class="template-label">RUC:</span>
+                        <span id="ruc-cliente" class="template-value">-</span>
                     </div>
                     <div class="template-row">
-                        <div class="template-label">Dirección:</div>
-                        <div id="direccion-cliente" class="template-value"></div>
+                        <span class="template-label">Dirección:</span>
+                        <span id="direccion-cliente" class="template-value">-</span>
                     </div>
                 </div>
+
                 <div class="form-group">
-                    <label for="num-muestras">Número de Muestras:</label>
-                    <input type="number" id="num-muestras" value="1" min="1">
+                    <label>Cantidad de Muestras:</label>
+                    <input type="number" id="num-muestras" value="0" min="0">
                 </div>
+
                 <div id="costos-container"></div>
+
                 <div class="template-total">
-                    <strong>Pago Total:</strong>
-                    <span id="pago-total">S/ 0.00</span>
+                    <span>LIQUIDACIÓN TOTAL: </span>
+                    <strong id="pago-total">S/ 0.00</strong>
                 </div>
-                <button type="button" id="guardar-boleta" class="btn">Guardar Boleta</button>
-            </form>
+
+                <button type="button" id="guardar-boleta" class="btn" style="width: 100%; margin-top: 2rem;">GENERAR Y ARCHIVAR BOLETA</button>
+            </div>
         </section>
 
-        <!-- Sección de Registro de Boletas -->
-        <section id="registro-boletas" style="display: none;">
-            <h2>Historial de Boletas</h2>
+        <!-- Historial de Boletas -->
+        <section id="registro-boletas">
+            <h2>Archivo General de Boletas</h2>
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
                             <th>Código</th>
-                            <th>Razón Social</th>
+                            <th>Cliente</th>
                             <th>RUC</th>
                             <th>Dirección</th>
-                            <th>N° Muestras</th>
-                            <th>Total</th>
-                            <th>Cancelado</th>
-                            <th>Acciones</th>
+                            <th>Muestras</th>
+                            <th>Monto</th>
+                            <th>Estado</th>
+                            <th>Táctica</th>
                         </tr>
                     </thead>
                     <tbody id="boletas-body"></tbody>
                 </table>
             </div>
             <div class="pagination">
-                <button id="prev-boletas" class="btn">Anterior</button>
-                <span>Página <span id="boletas-page">1</span></span>
-                <button id="next-boletas" class="btn">Siguiente</button>
+                <button id="prev-boletas" class="btn">Retroceder</button>
+                <span id="boletas-page">1</span>
+                <button id="next-boletas" class="btn">Avanzar</button>
             </div>
-        </section>
-        
-        <!-- Sección de Usuarios (Placeholder) -->
-        <section id="usuarios-sistema" style="display: none;">
-             <h2>Gestión de Usuarios</h2>
-             <p>Esta sección está en construcción.</p>
         </section>
     </main>
 
-    <footer>
-        <p>&copy; 2024 JC PATH LAB. Todos los derechos reservados.</p>
+    <footer style="padding: 3rem; text-align: center; border-top: 1px solid var(--border); margin-top: 4rem;">
+        <p style="color: var(--text-muted); font-size: 0.8rem; letter-spacing: 2px;">© 2026 JC PATH LAB | PROTOCOLO ANTIGRAVITY v3.0 | MODO ARQUITECTO ACTIVO</p>
     </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dexie/3.2.2/dexie.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="script.js?v=1.9"></script>
-    <script>
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyeH28qC7HnLvHJ6CtIy4FQ7iiZqOAN339gGMCZsCc8pBfBYJ-XsnpMQoKQOwY76TwG/exec";
-
-function guardarBoletaYEnviar(cliente, ruc, direccion, muestras, total, telefono) {
-    fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({cliente: cliente, ruc: ruc, direccion: direccion, muestras: muestras, total: total})
-    }).then(() => {
-        let mensaje = `Hola ${cliente}, adjunto tu boleta por S/${total}.`;
-        window.open(`https://wa.me/51${telefono}?text=${encodeURIComponent(mensaje)}`, '_blank');
-    });
-}
-
-function activarComandoVoz() {
-    const reconocimiento = new webkitSpeechRecognition();
-    reconocimiento.lang = 'es-PE';
-    reconocimiento.onresult = function(event) {
-        const comando = event.results[0][0].transcript.toLowerCase();
-        let regex = /boleta de (\d+) soles a (.*)/;
-        let coincidencia = comando.match(regex);
-        if(coincidencia) {
-            alert(`Cliente: ${coincidencia[2]} | Total: S/${coincidencia[1]}. Dale a Guardar.`);
-        }
-    };
-    reconocimiento.start();
-}
-    </script>
 </body>
-
 </html>
