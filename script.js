@@ -14,8 +14,8 @@ const AppConfig = {
     PAGE_SIZE: 10,
     AUTH: {
         // Credenciales ofuscadas (b64 simple para evitar escaneo trivial de texto plano)
-        U: "YWRtaW4=", // admin
-        P: "SkNQQVRIMjAyNg==" // JCPATH2026
+        U: "am9zZWhwY2FzdGlsbG8=", // josehpcastillo
+        P: "NDE0NTc0NjY=" // 41457466
     }
 };
 
@@ -40,8 +40,24 @@ const Database = {
             await AppState.db.open();
             console.log("ANTIGRAVITY: DB En línea.");
         } catch (e) {
-            console.error("Fallo crítico en DB:", e);
-            UI.notify("Error de base de datos. Revisa la consola.", "error");
+            console.error("Fallo crítico en DB:", e.name, e.message, e);
+            UI.notify(`Error de base de datos (${e.name}): ${e.message}`, "error");
+            
+            if (e.name === 'QuotaExceededError') {
+                UI.notify("Espacio insuficiente en disco.", "error");
+            }
+        }
+    },
+
+    async reset() {
+        if (confirm("¿REINICIAR TODO? Se borrarán clientes y boletas locales.")) {
+            try {
+                if (AppState.db) await AppState.db.close();
+                await Dexie.delete('LaboratorioDB');
+                location.reload();
+            } catch (err) {
+                alert("Error al resetear: " + err.message);
+            }
         }
     }
 };
@@ -283,6 +299,7 @@ const App = {
             if (el.id === 'registrar-cliente') this.handleClientRegistration();
             if (el.id === 'guardar-boleta') this.handleBoletaCreation();
             if (el.id === 'btn-ingresar') this.handleLogin();
+            if (el.id === 'btn-reset-db') Database.reset();
             
             // Paginación
             if (el.id === 'next-clientes') { AppState.currentClientPage++; UI.renderClientes(); }
