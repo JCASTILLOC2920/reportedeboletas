@@ -210,6 +210,31 @@ input:focus {
     border-color: var(--accent);
 }
 
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-wrapper input {
+    padding-right: 45px; /* Space for the eye icon */
+}
+
+.toggle-password {
+    position: absolute;
+    right: 15px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: color 0.2s;
+    user-select: none;
+    z-index: 10;
+}
+
+.toggle-password:hover {
+    color: var(--accent);
+}
+
 .btn {
     background: var(--accent);
     color: #fff;

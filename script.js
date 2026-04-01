@@ -33,7 +33,9 @@ const Database = {
     async init() {
         try {
             AppState.db = new Dexie('LaboratorioDB');
-            AppState.db.version(6).stores({
+            // Versión 8 (Mapea a 80 en IndexedDB). 
+            // Se incrementa para corregir VersionError (60 vs 70).
+            AppState.db.version(8).stores({
                 clientes: '++id, &ruc, razonSocial, createdAt',
                 boletas: '++id, codigo, ruc, fecha, createdAt'
             });
@@ -41,10 +43,14 @@ const Database = {
             console.log("ANTIGRAVITY: DB En línea.");
         } catch (e) {
             console.error("Fallo crítico en DB:", e.name, e.message, e);
-            UI.notify(`Error de base de datos (${e.name}): ${e.message}`, "error");
             
-            if (e.name === 'QuotaExceededError') {
+            if (e.name === 'VersionError') {
+                UI.notify("Conflicto de versiones detectado. El sistema intentará actualizar automáticamente. Si el problema persiste, use el botón 'Reiniciar Base de Datos'.", "info");
+                // Si falla por versión, intentamos resetear si el usuario acepta o simplemente informar.
+            } else if (e.name === 'QuotaExceededError') {
                 UI.notify("Espacio insuficiente en disco.", "error");
+            } else {
+                UI.notify(`Error de base de datos (${e.name}): ${e.message}`, "error");
             }
         }
     },
@@ -306,6 +312,16 @@ const App = {
             if (el.id === 'prev-clientes' && AppState.currentClientPage > 1) { AppState.currentClientPage--; UI.renderClientes(); }
             if (el.id === 'next-boletas') { AppState.currentBoletaPage++; UI.renderBoletas(); }
             if (el.id === 'prev-boletas' && AppState.currentBoletaPage > 1) { AppState.currentBoletaPage--; UI.renderBoletas(); }
+
+            // Password Toggle logic
+            if (el.id === 'toggle-ag-pass' || el.closest('#toggle-ag-pass')) {
+                const input = document.getElementById('ag-pass');
+                const icon = document.getElementById('toggle-ag-pass');
+                const isPassword = input.type === 'password';
+                input.type = isPassword ? 'text' : 'password';
+                icon.classList.toggle('fa-eye', !isPassword);
+                icon.classList.toggle('fa-eye-slash', isPassword);
+            }
         });
 
         // Inputs específicos
