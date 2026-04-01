@@ -1,0 +1,169 @@
+/**
+ * JC PATH LAB - DESIGN SYSTEM (ANTIGRAVITY v5.0)
+ * Neuro-Estética de Alto Impacto | Ergonomía Operativa
+ */
+
+:root {
+    /* 1. PALETA DE ALTO CONTRASTE (NEURO-PSICOLOGUÍA) */
+    --bg-deep: #020617;
+    --card-surface: rgba(15, 23, 42, 0.85);
+    --accent-primary: #8b5cf6; /* Electric Violet - Confianza y Lujo */
+    --accent-glow: rgba(139, 92, 246, 0.4);
+    --accent-secondary: #22d3ee; /* Cyan - Precisión Técnica */
+    --text-high: #f8fafc;
+    --text-dim: #94a3b8;
+    --border-glass: rgba(255, 255, 255, 0.08);
+    --error-vivid: #f43f5e;
+    --success-vivid: #10b981;
+    --font-main: 'Inter', system-ui, sans-serif;
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* 0. RESET & ACCESIBILIDAD */
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+    background: var(--bg-deep);
+    color: var(--text-high);
+    font-family: var(--font-main);
+    line-height: 1.5;
+    overflow-x: hidden;
+    min-height: 100vh;
+    /* Efecto de Humo Ambiental */
+    background-image: 
+        radial-gradient(circle at 0% 0%, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(34, 211, 238, 0.05) 0%, transparent 50%);
+}
+
+/* 1. NAVEGACIÓN (RESPONSIVE HYBRID) */
+.navbar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1rem 2rem; background: rgba(2, 6, 23, 0.8);
+    backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-glass);
+    position: sticky; top: 0; z-index: 1000;
+}
+
+.logo { display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.3s; }
+.logo:hover { filter: brightness(1.2); transform: scale(1.02); }
+.logo-text { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; background: linear-gradient(to right, #fff, var(--accent-secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+.nav-menu { display: flex; list-style: none; gap: 1rem; }
+.nav-link { 
+    text-decoration: none; color: var(--text-dim); font-size: 0.85rem; font-weight: 600;
+    padding: 8px 16px; border-radius: 12px; transition: 0.3s ease;
+}
+.nav-link:hover, .nav-link.active { color: #fff; background: rgba(255,255,255,0.05); box-shadow: inset 0 0 0 1px var(--border-glass); }
+
+/* Bottom Nav (Mobile Only) */
+.mobile-nav {
+    display: none; position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border-glass); padding: 10px 10px calc(10px + var(--safe-area-bottom));
+    z-index: 2000; justify-content: space-around;
+}
+
+/* 2. LAYOUT & SECTIONS */
+main { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem 6rem; }
+section { display: none; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+section.active { display: block; }
+
+@keyframes slideUp { 
+    from { opacity: 0; transform: translateY(20px); } 
+    to { opacity: 1; transform: translateY(0); } 
+}
+
+/* 3. DASHBOARD CARDS (NEURO-INTERACTIVE) */
+.card-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; }
+.card {
+    background: var(--card-surface); border: 1px solid var(--border-glass);
+    padding: 2.5rem 2rem; border-radius: 24px; text-align: center;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative; overflow: hidden;
+}
+.card:hover {
+    transform: translateY(-8px); border-color: var(--accent-primary);
+    box-shadow: 0 20px 40px -15px rgba(0,0,0,0.5), 0 0 20px var(--accent-glow);
+}
+.card::after {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at top right, var(--accent-glow), transparent 70%);
+    opacity: 0; transition: 0.4s;
+}
+.card:hover::after { opacity: 0.3; }
+
+.card i { font-size: 3rem; color: var(--accent-secondary); margin-bottom: 1.5rem; filter: drop-shadow(0 0 10px var(--accent-secondary)); }
+.card h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; }
+
+/* 4. FORMS & INPUTS (ERGONOMIC) */
+.form-container { 
+    background: var(--card-surface); border-radius: 28px; border: 1px solid var(--border-glass);
+    padding: 2.5rem; max-width: 600px; margin: 0 auto;
+}
+input, select {
+    width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border-glass);
+    padding: 16px; border-radius: 14px; color: #fff; font-size: 1rem;
+    transition: 0.2s; margin-bottom: 1.5rem;
+}
+input:focus { border-color: var(--accent-primary); box-shadow: 0 0 15px var(--accent-glow); outline: none; }
+
+.btn {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: #fff; border: none; padding: 18px 32px; border-radius: 16px;
+    font-weight: 700; font-size: 1rem; cursor: pointer; transition: 0.3s;
+    width: 100%; box-shadow: 0 8px 20px -6px var(--accent-glow);
+}
+.btn:hover { transform: translateY(-2px) scale(1.02); filter: brightness(1.1); box-shadow: 0 12px 25px -4px var(--accent-glow); }
+
+.delete-btn {
+    background: linear-gradient(135deg, var(--error-vivid), #be123c) !important;
+    box-shadow: 0 8px 20px -6px rgba(244, 63, 94, 0.4);
+}
+.delete-btn:hover { box-shadow: 0 12px 25px -4px rgba(244, 63, 94, 0.5); }
+
+/* 5. TABLES (CLEAN & PERSUASIVE) */
+.table-container { 
+    background: var(--card-surface); border-radius: 20px; border: 1px solid var(--border-glass); 
+    overflow-x: auto; margin-top: 2rem; -webkit-overflow-scrolling: touch;
+}
+table { width: 100%; border-collapse: collapse; }
+th { padding: 1.25rem 0.75rem; text-align: left; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); border-bottom: 1px solid var(--border-glass); }
+td { padding: 1.25rem 0.75rem; border-bottom: 1px solid var(--border-glass); font-size: 0.95rem; vertical-align: middle; }
+tr:hover { background: rgba(255,255,255,0.02); }
+
+.action-buttons-container { 
+    display: flex; gap: 12px; min-width: 110px; justify-content: flex-start; align-items: center;
+}
+
+.status-badge {
+    padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;
+    background: rgba(16, 185, 129, 0.1); border: 1px solid var(--success-vivid);
+}
+
+/* 6. SECURITY LAYER (MILITARY GRADE UX) */
+#ag-lock-screen {
+    position: fixed; inset: 0; background: var(--bg-deep); z-index: 9999;
+    display: flex; justify-content: center; align-items: center;
+}
+.lock-box {
+    background: var(--card-surface); padding: 4rem 3rem; border-radius: 32px;
+    border: 1px solid var(--border-glass); width: 100%; max-width: 420px;
+    text-align: center; box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+}
+
+/* RESPONSIVE & MOBILE ERGONOMICS */
+@media (max-width: 768px) {
+    .navbar .nav-menu { display: none; }
+    .mobile-nav { display: flex; }
+    .mobile-nav-item {
+        color: var(--text-dim); text-decoration: none; display: flex;
+        flex-direction: column; align-items: center; gap: 4px; font-size: 0.65rem;
+    }
+    .mobile-nav-item.active { color: var(--accent-secondary); }
+    .mobile-nav-item i { font-size: 1.5rem; }
+    
+    main { padding-top: 1rem; }
+    .card { padding: 2rem 1.5rem; }
+    .form-container { padding: 1.5rem; border-radius: 20px; }
+    
+    /* Ergonomía total en una mano: Botones grandes */
+    .btn { padding: 22px; font-size: 1.1rem; }
+}
