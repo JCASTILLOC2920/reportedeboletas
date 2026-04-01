@@ -195,14 +195,20 @@ const Antigravity = (() => {
             document.getElementById('num-muestras')?.addEventListener('input', e => this.renderMuestras(e.target.value));
         },
         login() {
-            const u = btoa(document.getElementById('ag-user').value);
-            const p = btoa(document.getElementById('ag-pass').value);
+            const userField = document.getElementById('ag-user');
+            const passField = document.getElementById('ag-pass');
+            
+            // Limpieza de espacios accidentales y normalización a minúsculas
+            const u = btoa(userField.value.trim().toLowerCase());
+            const p = btoa(passField.value.trim());
+            
             if (u === CONFIG.AUTH.U && p === CONFIG.AUTH.P) {
                 sessionStorage.setItem('ag_auth', 'true');
                 document.getElementById('ag-lock-screen').style.display = 'none';
                 UI.show('inicio');
             } else {
                 document.getElementById('ag-error').style.display = 'block';
+                console.warn("ANTIGRAVITY: Intento de acceso fallido.");
             }
         },
         togglePass() {
