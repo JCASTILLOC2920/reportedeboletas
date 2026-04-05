@@ -22,7 +22,8 @@ const Antigravity = (() => {
     const state = {
         db: null,
         session: { auth: false },
-        ui: { currentSection: 'inicio', clientPage: 1, boletaPage: 1 }
+        ui: { currentSection: 'inicio', clientPage: 1, boletaPage: 1 },
+        tempSearch: { ruc: '', direccion: '' }
     };
 
     // 3. CARGADOR DE DEPENDENCIAS (LAZY LOADING)
@@ -159,7 +160,7 @@ const Antigravity = (() => {
         bind() {
             document.body.addEventListener('click', e => {
                 const el = e.target;
-                const btn = el.closest('[data-action], [data-section], button, input, a');
+                const btn = el.closest('[data-action], [data-section], button, input, a, i');
                 if (!btn) return;
 
                 const act = btn.dataset.action || btn.id;
@@ -180,7 +181,16 @@ const Antigravity = (() => {
                 if (act === 'print') Services.exportPDF(parseInt(id));
                 if (act === 'del-c' && confirm("¿Eliminar?")) DB.connect().then(db => db.clientes.delete(parseInt(id)).then(() => UI.renderClientes()));
                 if (act === 'del-b' && confirm("¿Eliminar?")) DB.connect().then(db => db.boletas.delete(parseInt(id)).then(() => UI.renderBoletas()));
+                
+                // Inyección de Datos
+                if (act === 'btn-inject-ruc') this.inject('ruc');
+                if (act === 'btn-inject-dir') this.inject('direccion');
             });
+
+            const rsInput = document.getElementById('razon-social');
+            if (rsInput) {
+                rsInput.addEventListener('input', this.debounce(() => this.searchData(rsInput.value), 1000));
+            }
 
             document.getElementById('cliente-select')?.addEventListener('change', async e => {
                 const db = await DB.connect();
@@ -194,11 +204,59 @@ const Antigravity = (() => {
 
             document.getElementById('num-muestras')?.addEventListener('input', e => this.renderMuestras(e.target.value));
         },
+        debounce(fn, delay) {
+            let timeout;
+            return (...args) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => fn(...args), delay);
+            };
+        },
+        async searchData(query) {
+            if (query.length < 4) return;
+            const spinner = document.getElementById('search-spinner');
+            if (spinner) spinner.style.display = 'block';
+            
+            console.log(`ANTIGRAVITY: Iniciando búsqueda fidedigna para '${query}'...`);
+            
+            try {
+                // Simulacro de búsqueda inteligente (Sustituir por API real de SUNAT/Google Search)
+                const mockResults = {
+                    "CLINICA CARRION": { ruc: "20100123456", direccion: "Av. Guardia Civil 456, San Borja, Lima" },
+                    "LABORATORIOS ROE": { ruc: "20100987654", direccion: "Calle Los Pinos 123, San Isidro, Lima" }
+                };
+
+                const data = mockResults[query.toUpperCase()] || null;
+                await new Promise(r => setTimeout(r, 1200)); 
+
+                if (data) {
+                    state.tempSearch = data;
+                    document.getElementById('btn-inject-ruc')?.classList.add('visible');
+                    document.getElementById('btn-inject-dir')?.classList.add('visible');
+                    console.log("ANTIGRAVITY: Datos encontrados e indicadores de inyección activados.");
+                } else {
+                    document.querySelectorAll('.inject-btn').forEach(b => b.classList.remove('visible'));
+                }
+            } catch (e) {
+                console.error("ERROR en búsqueda inteligente:", e);
+            } finally {
+                if (spinner) spinner.style.display = 'none';
+            }
+        },
+        inject(field) {
+            const val = state.tempSearch[field];
+            if (val) {
+                const target = document.getElementById(field);
+                if (target) {
+                    target.value = val;
+                    document.getElementById(`btn-inject-${field === 'ruc' ? 'ruc' : 'dir'}`)?.classList.remove('visible');
+                    target.style.boxShadow = "0 0 20px var(--accent-glow)";
+                    setTimeout(() => target.style.boxShadow = "none", 1000);
+                }
+            }
+        },
         login() {
             const userField = document.getElementById('ag-user');
             const passField = document.getElementById('ag-pass');
-            
-            // Limpieza de espacios accidentales y normalización a minúsculas
             const u = btoa(userField.value.trim().toLowerCase());
             const p = btoa(passField.value.trim());
             
@@ -214,7 +272,7 @@ const Antigravity = (() => {
         togglePass() {
             const i = document.getElementById('ag-pass');
             const ic = document.getElementById('toggle-ag-pass');
-            if (!ic) return console.log("ERROR: Icono de toggle no encontrado");
+            if (!ic) return;
             const isP = i.type === 'password';
             i.type = isP ? 'text' : 'password';
             ic.className = `fas fa-eye${isP ? '-slash' : ''} toggle-password`;
