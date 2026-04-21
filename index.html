@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
+    <script defer src="https://unpkg.com/dexie@3.2.2/dist/dexie.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script defer src="antigravity.js?v=5.6.0"></script>
 </head>
 <body>
@@ -138,7 +140,7 @@
                             <th>IDENT</th>
                             <th>RAZÓN SOCIAL</th>
                             <th>RUC / DNI</th>
-                            <th>ESTADO</th>
+                            <th>ACCIONES</th>
                         </tr>
                     </thead>
                     <tbody id="clientes-body"></tbody>
@@ -161,10 +163,15 @@
 
                 <div style="margin-bottom: 1.5rem;">
                     <label style="font-size: 0.8rem; color: var(--text-dim);">NÚMERO DE MUESTRAS CLÍNICAS:</label>
-                    <input type="number" id="num-muestras" value="0" min="0" style="margin-top: 8px;">
+                    <input type="number" id="num-muestras" value="1" min="1" style="margin-top: 8px;">
                 </div>
 
                 <div id="costos-container" style="margin-bottom: 2rem; display: grid; gap: 10px;"></div>
+
+                <div class="template-total" style="text-align: right; margin-bottom: 2rem;">
+                    <span style="font-size: 0.8rem; color: var(--text-dim);">TOTAL A FACTURAR:</span>
+                    <h3 id="pago-total" style="font-size: 1.8rem; color: var(--accent-secondary);">S/ 0.00</h3>
+                </div>
 
                 <button type="button" id="guardar-boleta" class="btn">GENERAR Y ARCHIVAR BOLETA</button>
             </div>
