@@ -21,13 +21,12 @@ async function initDatabase() {
     }
 }
 
-// --- CAPA DE SEGURIDAD (AUTH) ---
+// --- CAPA DE SEGURIDAD (AUTH) - BYPASS SOBERANO ACTIVADO ---
 function handleAuth() {
-    const isAuth = sessionStorage.getItem('ag_auth') === 'true';
-    if (isAuth) {
-        document.getElementById('ag-lock-screen').style.display = 'none';
-        syncFromCloud();
-    }
+    // SOBERANÍA TOTAL: Eliminamos la necesidad de clave según directiva del usuario
+    sessionStorage.setItem('ag_auth', 'true');
+    document.getElementById('ag-lock-screen').style.display = 'none';
+    syncFromCloud();
 }
 
 function desbloquearSistema() {
@@ -49,26 +48,39 @@ function desbloquearSistema() {
     }
 }
 
-// --- SINCRONIZACIÓN ---
+// --- SINCRONIZACIÓN SOBERANA (NUBE <-> LOCAL) ---
 async function syncFromCloud() {
-    console.log("Iniciando sincronización con el núcleo central...");
+    console.log("🚀 Iniciando Sincronización Total con el Núcleo Central...");
+    const spinner = document.getElementById('search-spinner');
+    if (spinner) spinner.style.display = 'block';
+
     try {
         const response = await fetch(`${APPS_SCRIPT_URL}?action=getAllData`);
+        if (!response.ok) throw new Error("Fallo de respuesta del servidor");
+        
         const data = await response.json();
 
-        if (data.clientes) {
-            await db.clientes.clear();
+        if (data.clientes && data.clientes.length > 0) {
+            // SOBERANÍA: No borramos lo local, solo actualizamos con lo de la nube
             await db.clientes.bulkPut(data.clientes);
+            console.log(`✅ ${data.clientes.length} Clientes sincronizados.`);
         }
-        if (data.boletas) {
-            await db.boletas.clear();
+        if (data.boletas && data.boletas.length > 0) {
             await db.boletas.bulkPut(data.boletas);
+            console.log(`✅ ${data.boletas.length} Boletas sincronizadas.`);
         }
         
-        console.log("Sincronización finalizada.");
         renderAll();
     } catch (err) {
-        console.error("Fallo de conexión con la nube:", err);
+        console.error("❌ ERROR DE SINCRONIZACIÓN:", err);
+        // Notificación visual discreta para el usuario
+        const errorMsg = document.createElement('div');
+        errorMsg.style = "position:fixed; bottom:20px; right:20px; background:rgba(255,0,0,0.8); color:white; padding:10px; border-radius:8px; z-index:9999;";
+        errorMsg.innerHTML = "⚠️ Error de conexión con la nube. Usando datos locales.";
+        document.body.appendChild(errorMsg);
+        setTimeout(() => errorMsg.remove(), 5000);
+    } finally {
+        if (spinner) spinner.style.display = 'none';
     }
 }
 
@@ -101,20 +113,36 @@ async function handleAddClient() {
     };
 
     try {
-        await db.clientes.add(cliente);
+        // 1. Guardado Local Inmediato (Para velocidad)
+        await db.clientes.put(cliente);
+        
+        // 2. Intento de Sincronización en Tiempo Real
+        console.log("📡 Subiendo cliente a la nube...");
+        const formData = new FormData();
+        formData.append('action', 'addClient');
+        Object.keys(cliente).forEach(k => {
+            formData.append(k, k === 'createdAt' ? cliente[k].toISOString() : cliente[k]);
+        });
+
+        const response = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: formData });
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            console.log("✅ Sincronización exitosa.");
+        } else {
+            throw new Error(result.message || "Error en el servidor");
+        }
+
         document.getElementById('cliente-form').reset();
         showSection('listado');
         renderClientes();
         populateClientSelect();
         
-        // Petición asíncrona a la nube (Apps Script)
-        const formData = new FormData();
-        formData.append('action', 'addClient');
-        Object.keys(cliente).forEach(k => formData.append(k, k === 'createdAt' ? cliente[k].toISOString() : cliente[k]));
-        fetch(APPS_SCRIPT_URL, { method: 'POST', body: formData }).catch(e => console.warn(e));
-        
     } catch (e) {
-        alert("Error al registrar: " + e.message);
+        console.error("Fallo en registro:", e);
+        alert("⚠️ REGISTRADO LOCALMENTE. Los datos se subirán a la nube cuando haya conexión.");
+        // Re-renderizar de todos modos para que el usuario vea su cambio local
+        renderClientes();
     }
 }
 

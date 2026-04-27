@@ -13,11 +13,12 @@
     
     <script defer src="https://unpkg.com/dexie@3.2.2/dist/dexie.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- script.js desactivado por soberanía de datos -->
     <script defer src="antigravity.js?v=5.6.0"></script>
 </head>
 <body>
-    <!-- 1. CAPA DE SEGURIDAD NEURO-PROTEGIDA -->
-    <div id="ag-lock-screen">
+    <!-- 1. CAPA DE SEGURIDAD NEURO-PROTEGIDA (DESACTIVADA POR SOBERANÍA) -->
+    <div id="ag-lock-screen" style="display: none;">
         <div class="lock-box">
             <i class="fas fa-microscope" style="font-size: 3.5rem; color: var(--accent-secondary); margin-bottom: 2rem; filter: drop-shadow(0 0 15px var(--accent-glow));"></i>
             <h2 style="margin-bottom: 0.5rem; letter-spacing: -1px;">JC PATH LAB</h2>
@@ -107,26 +108,33 @@
             <div class="form-container">
                 <form id="cliente-form">
                     <div class="smart-input-container">
-                        <input type="text" id="razon-social" required placeholder="Razón Social o Nombre">
+                        <label for="razon-social" style="display: block; font-size: 0.75rem; color: var(--text-dim); margin-bottom: 5px; font-weight: 700; letter-spacing: 1px;">INSTITUCIÓN / RAZÓN SOCIAL</label>
+                        <input type="text" id="razon-social" required placeholder="Ej: Clínica Carrión S.A.">
                         <div id="search-spinner" class="spinner" style="display: none;"></div>
                     </div>
                     
                     <div class="smart-input-container">
-                        <input type="text" id="ruc" required placeholder="RUC o DNI de Identificación">
+                        <label for="ruc" style="display: block; font-size: 0.75rem; color: var(--text-dim); margin-bottom: 5px; font-weight: 700; letter-spacing: 1px;">RUC / DNI DE IDENTIFICACIÓN</label>
+                        <input type="text" id="ruc" required placeholder="11 dígitos">
                         <button type="button" class="inject-btn" id="btn-inject-ruc" title="Inyectar RUC">
                             <i class="fas fa-syringe"></i> INYECTAR
                         </button>
                     </div>
 
                     <div class="smart-input-container">
-                        <input type="text" id="direccion" required placeholder="Dirección Fiscal Registrada">
+                        <label for="direccion" style="display: block; font-size: 0.75rem; color: var(--text-dim); margin-bottom: 5px; font-weight: 700; letter-spacing: 1px;">DIRECCIÓN FISCAL REGISTRADA</label>
+                        <input type="text" id="direccion" required placeholder="Calle, Distrito, Provincia">
                         <button type="button" class="inject-btn" id="btn-inject-dir" title="Inyectar Dirección">
                             <i class="fas fa-syringe"></i> INYECTAR
                         </button>
                     </div>
 
-                    <input type="text" id="telefono" placeholder="Portal de Contacto (Opcional)">
-                    <button type="button" id="registrar-cliente" class="btn">DESPLEGAR REGISTRO</button>
+                    <div class="smart-input-container">
+                        <label for="telefono" style="display: block; font-size: 0.75rem; color: var(--text-dim); margin-bottom: 5px; font-weight: 700; letter-spacing: 1px;">TELÉFONO DE CONTACTO</label>
+                        <input type="text" id="telefono" placeholder="WhatsApp / Móvil">
+                    </div>
+                    
+                    <button type="button" id="registrar-cliente" class="btn" style="margin-top: 1.5rem;">DESPLEGAR REGISTRO MAESTRO</button>
                 </form>
             </div>
         </section>
