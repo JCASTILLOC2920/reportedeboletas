@@ -1,8 +1,23 @@
-// --- CONFIGURACIÓN ESTRUCTURAL ANTIGRAVITY v5.0 ---
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFNtXP7zgWWGmIEhthYSRScOuTjeI5WS_yDPtX0zGWM1X2n_boMjitmCcFEbaZmHg/exec';
 const USUARIO_MAESTRO = "admin";
 const CLAVE_MAESTRA = "JCPATH2026";
 const { jsPDF } = window.jspdf;
+
+// --- CONFIGURACIÓN DEL SEGUNDO CEREBRO (FIREBASE) ---
+const firebaseConfig = {
+  apiKey: "AIzaSyDlghtpLFgjs568nMIZK9q1xaRJHmNsWjI",
+  authDomain: "jc-path-lab-brain.firebaseapp.com",
+  databaseURL: "https://jc-path-lab-brain-default-rtdb.firebaseio.com",
+  projectId: "jc-path-lab-brain",
+  storageBucket: "jc-path-lab-brain.firebasestorage.app",
+  messagingSenderId: "742605287948",
+  appId: "1:742605287948:web:964a38bcaae92dae683429",
+  measurementId: "G-PZCRZQH5D4"
+};
+
+// Inicializar Firebase
+firebase.initializeApp(firebaseConfig);
+const fbDb = firebase.database();
 
 let db;
 
@@ -48,37 +63,47 @@ function desbloquearSistema() {
     }
 }
 
-// --- SINCRONIZACIÓN SOBERANA (NUBE <-> LOCAL) ---
+// --- SINCRONIZACIÓN SOBERANA (DUAL: FIREBASE + SHEETS) ---
 async function syncFromCloud() {
-    console.log("🚀 Iniciando Sincronización Total con el Núcleo Central...");
+    console.log("🚀 Iniciando Sincronización Dual (Alfa + Beta)...");
     const spinner = document.getElementById('search-spinner');
     if (spinner) spinner.style.display = 'block';
 
     try {
-        const response = await fetch(`${APPS_SCRIPT_URL}?action=getAllData`);
-        if (!response.ok) throw new Error("Fallo de respuesta del servidor");
-        
-        const data = await response.json();
+        // 1. Prioridad Beta: Firebase (Velocidad Relámpago)
+        fbDb.ref('/').once('value', async (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                if (data.clientes) {
+                    const clientArray = Object.values(data.clientes);
+                    await db.clientes.bulkPut(clientArray);
+                    console.log(`✅ Beta: ${clientArray.length} Clientes sincronizados.`);
+                }
+                if (data.boletas) {
+                    const boletaArray = Object.values(data.boletas);
+                    await db.boletas.bulkPut(boletaArray);
+                    console.log(`✅ Beta: ${boletaArray.length} Boletas sincronizadas.`);
+                }
+                renderAll();
+            }
+        });
 
-        if (data.clientes && data.clientes.length > 0) {
-            // SOBERANÍA: No borramos lo local, solo actualizamos con lo de la nube
-            await db.clientes.bulkPut(data.clientes);
-            console.log(`✅ ${data.clientes.length} Clientes sincronizados.`);
-        }
-        if (data.boletas && data.boletas.length > 0) {
-            await db.boletas.bulkPut(data.boletas);
-            console.log(`✅ ${data.boletas.length} Boletas sincronizadas.`);
+        // 2. Respaldo Alfa: Google Sheets (Consistencia)
+        const response = await fetch(`${APPS_SCRIPT_URL}?action=getAllData`);
+        if (response.ok) {
+            const data = await response.json();
+            if (data.clientes && data.clientes.length > 0) {
+                await db.clientes.bulkPut(data.clientes);
+            }
+            if (data.boletas && data.boletas.length > 0) {
+                await db.boletas.bulkPut(data.boletas);
+            }
+            renderAll();
+            console.log("✅ Alfa: Sincronización de respaldo completada.");
         }
         
-        renderAll();
     } catch (err) {
         console.error("❌ ERROR DE SINCRONIZACIÓN:", err);
-        // Notificación visual discreta para el usuario
-        const errorMsg = document.createElement('div');
-        errorMsg.style = "position:fixed; bottom:20px; right:20px; background:rgba(255,0,0,0.8); color:white; padding:10px; border-radius:8px; z-index:9999;";
-        errorMsg.innerHTML = "⚠️ Error de conexión con la nube. Usando datos locales.";
-        document.body.appendChild(errorMsg);
-        setTimeout(() => errorMsg.remove(), 5000);
     } finally {
         if (spinner) spinner.style.display = 'none';
     }
@@ -113,25 +138,19 @@ async function handleAddClient() {
     };
 
     try {
-        // 1. Guardado Local Inmediato (Para velocidad)
+        // 1. Guardado Local
         await db.clientes.put(cliente);
         
-        // 2. Intento de Sincronización en Tiempo Real
-        console.log("📡 Subiendo cliente a la nube...");
+        // 2. Beta Push: Firebase (Inmediato)
+        fbDb.ref('clientes/' + cliente.ruc).set(cliente);
+        
+        // 3. Alfa Push: Google Sheets
         const formData = new FormData();
         formData.append('action', 'addClient');
         Object.keys(cliente).forEach(k => {
             formData.append(k, k === 'createdAt' ? cliente[k].toISOString() : cliente[k]);
         });
-
-        const response = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: formData });
-        const result = await response.json();
-
-        if (result.status === 'success') {
-            console.log("✅ Sincronización exitosa.");
-        } else {
-            throw new Error(result.message || "Error en el servidor");
-        }
+        fetch(APPS_SCRIPT_URL, { method: 'POST', body: formData }).catch(e => console.warn("Alfa Sync Fail:", e));
 
         document.getElementById('cliente-form').reset();
         showSection('listado');
@@ -140,9 +159,7 @@ async function handleAddClient() {
         
     } catch (e) {
         console.error("Fallo en registro:", e);
-        alert("⚠️ REGISTRADO LOCALMENTE. Los datos se subirán a la nube cuando haya conexión.");
-        // Re-renderizar de todos modos para que el usuario vea su cambio local
-        renderClientes();
+        alert("⚠️ Error en registro local.");
     }
 }
 
@@ -313,6 +330,11 @@ function renderAll() {
 // --- EVENTOS ---
 document.addEventListener('DOMContentLoaded', async () => {
     await initDatabase();
+    
+    // FIX: Renderizado garantizado de la UI local antes de sincronizar
+    renderAll();
+    renderCostoInputs();
+    
     handleAuth();
     
     document.getElementById('btn-ingresar').addEventListener('click', desbloquearSistema);
