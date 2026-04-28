@@ -129,15 +129,21 @@ async function handleAddClient() {
         return;
     }
 
-    const cliente = {
-        razonSocial,
-        ruc,
-        direccion: document.getElementById('direccion').value,
-        telefono: document.getElementById('telefono').value,
-        createdAt: new Date()
-    };
-
     try {
+        const existente = await db.clientes.where('ruc').equals(ruc).first();
+        if (existente) {
+            alert("⚠️ Ya existe un cliente registrado con este RUC.");
+            return;
+        }
+
+        const cliente = {
+            razonSocial,
+            ruc,
+            direccion: document.getElementById('direccion').value,
+            telefono: document.getElementById('telefono').value,
+            createdAt: new Date()
+        };
+
         // 1. Guardado Local
         await db.clientes.put(cliente);
         
@@ -157,9 +163,10 @@ async function handleAddClient() {
         renderClientes();
         populateClientSelect();
         
+        alert("✅ Cliente registrado exitosamente.");
     } catch (e) {
         console.error("Fallo en registro:", e);
-        alert("⚠️ Error en registro local.");
+        alert("⚠️ Error en registro local: " + e.message);
     }
 }
 
