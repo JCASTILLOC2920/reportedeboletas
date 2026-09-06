@@ -1,11 +1,9 @@
-const CACHE_NAME = 'jc-path-lab-v5.6.0';
+const CACHE_NAME = 'jc-path-lab-v5.6.1';
 const ASSETS = [
   './',
   './index.html',
   './antigravity.css',
   './antigravity.js',
-  './style.css',
-  './script.js',
   './manifest.json'
 ];
 
